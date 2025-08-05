@@ -8,6 +8,13 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
 add_executable (event-streaming  ${SOURCES})
 
+include(FetchContent)
+
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
+target_link_libraries(event-streaming PRIVATE nlohmann_json::nlohmann_json)
+
 if (WIN32)
   target_link_libraries(event-streaming ws2_32.lib)
 endif()
