@@ -21,7 +21,7 @@ public:
         std::cout << "Reached CreateEventTypeHandler" << '\n';
         // TODO: error checking + set max length
         std::string eventTypeName = json["eventTypeName"];
-        auto propsArray = json["properties"].array();
+        auto propsArray = json["properties"];
 
         std::map<std::string, PropertyType> props;
         for (auto it = propsArray.begin(); it != propsArray.end(); ++it)
