@@ -18,40 +18,46 @@ void TcpMessageReceiver::TryReceiveMessage(std::function<void(std::string)> mess
     fd_set socketFdSet;
     FD_ZERO(&socketFdSet);
 
-    unsigned int maxFd = m_TcpConnectionPool.GetHighestSocketDescriptor();
-    if (maxFd < 0)
+    int maxFd = -1;
+
+    // Add all sockets to the set
+    for (const auto& clientSocket : m_TcpConnectionPool)
     {
-        return; // No valid sockets to monitor
+        FD_SET(clientSocket, &socketFdSet);
+        if ((int)clientSocket > maxFd)
+        {
+            maxFd = clientSocket;
+        }
     }
 
-    int selectResult = select(maxFd + 1, &socketFdSet, nullptr, nullptr, nullptr);
+    timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 10000;
+    int selectResult = select(maxFd + 1, &socketFdSet, nullptr, nullptr, &timeout);
+    
+    if (selectResult <= 0)
+    {
+        return;
+    }
+
     for (auto& clientSocket : m_TcpConnectionPool)
     {
         if (!FD_ISSET(clientSocket, &socketFdSet))
             continue;
         std::cout << "Checking socket: " << clientSocket << '\n';
-
-        if (selectResult < 0) // Error
+        std::cout << "Socket " << clientSocket << " is ready to read.\n";
+        int bufSize = 1024;
+        void* buffer = malloc(bufSize);
+        int receivedBytes = recv(clientSocket, buffer, bufSize, 0);
+        if (receivedBytes < 0)
         {
-            std::cerr << "Error in select for socket: " << clientSocket << '\n';
+            std::cerr << "Error receiving message from socket: " << clientSocket << '\n';
+            free(buffer);
             continue; // Skip to the next socket
         }
-        else if (selectResult > 0) // Ready to read
-        {
-            std::cout << "Socket " << clientSocket << " is ready to read.\n";
-            int bufSize = 1024;
-            void* buffer = malloc(bufSize);
-            int receivedBytes = recv(clientSocket, buffer, bufSize, 0);
-            if (receivedBytes < 0)
-            {
-                std::cerr << "Error receiving message from socket: " << clientSocket << '\n';
-                free(buffer);
-                continue; // Skip to the next socket
-            }
 
-            std::string message((char*)buffer, receivedBytes);
-            free(buffer);
-            messageHandler(message); // Call the provided message handler with the received message
-        }
+        std::string message((char*)buffer, receivedBytes);
+        free(buffer);
+        messageHandler(message); // Call the provided message handler with the received message
     }
 }
