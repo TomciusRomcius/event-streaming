@@ -63,12 +63,9 @@ public:
 		while (1)
 		{
 			m_TcpConnectionManager->TryAcceptIncomingConnection();
-			m_TcpMessageReceiver->TryReceiveMessage([&](std::string message) {
-				std::cout << "TryReceiveMessage lambda" << '\n';
-				auto js = nlohmann::json::parse(message);
-				std::string type = GetTcpRequestType(js);
-				std::cout << "type: " << type << '\n';
-				m_TcpRequestHandlerService->TryExecuteStrategy(type, js);
+			m_TcpMessageReceiver->TryReceiveMessage([this](std::string message) 
+			{ 
+				HandleTcpMessage(message); 
 			});
 
 			sleep(1); // Release current thread so we don't overwork the thread for now
@@ -76,6 +73,26 @@ public:
 	}
 
 private:
+	void HandleTcpMessage(std::string message)
+	{
+		try 
+		{
+			auto js = nlohmann::json::parse(message);
+			std::string type = GetTcpRequestType(js);
+			std::cout << "type: " << type << '\n';
+			std::cout << "Failed to get request type" << '\n';
+			m_TcpRequestHandlerService->TryExecuteStrategy(type, js);
+		}
+		catch (nlohmann::json_abi_v3_12_0::detail::type_error ex)
+		{
+			std::cerr << ex.what() << '\n';
+		}
+		catch (...)
+		{
+			std::cerr << "Unknown exception was thrown while executing strategy" << '\n';
+		}
+	}
+
 	std::unique_ptr<TcpConnectionPool> m_TcpConnectionPool;
 	std::unique_ptr<TcpSocketConnectionManager> m_TcpConnectionManager;
 	std::unique_ptr<TcpSocketMessenger> m_TcpSocketMessenger;
