@@ -45,6 +45,17 @@ public:
 		m_TcpMessageReceiver = std::make_unique<TcpMessageReceiver>(*m_TcpConnectionPool);
 		m_TcpRequestHandlerService = std::make_unique<TcpRequestHandlerService>();
 		m_EventSystem = std::make_unique<EventSystem>();
+
+		RegisterRequestStrategies();
+	}
+
+	void RegisterRequestStrategies()
+	{
+		// Strategies are owned by handler service
+		m_TcpRequestHandlerService->RegisterStrategy(
+			"create-event-type",
+			new CreateEventTypeHandler(*m_EventSystem)
+		);
 	}
 
 	void Start()
