@@ -7,7 +7,7 @@ class TcpMessageReceiver
 {
 public:
     TcpMessageReceiver(TcpConnectionPool& tcpConnectionPool);
-    void TryReceiveMessage(std::function<void(std::string)> messageHandler);
+    void TryReceiveMessage(const std::function<void(std::string)>& messageHandler) const;
 private:
     TcpConnectionPool& m_TcpConnectionPool;
 };

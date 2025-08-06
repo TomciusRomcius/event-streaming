@@ -11,7 +11,7 @@ TcpMessageReceiver::TcpMessageReceiver(TcpConnectionPool& tcpConnectionPool)
 
 }
 
-void TcpMessageReceiver::TryReceiveMessage(std::function<void(std::string)> messageHandler)
+void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string)>& messageHandler) const
 {
     std::cout << "TryReceiveMessage" << '\n';
     
@@ -48,7 +48,7 @@ void TcpMessageReceiver::TryReceiveMessage(std::function<void(std::string)> mess
         std::cout << "Socket " << clientSocket << " is ready to read.\n";
         int bufSize = 1024;
         void* buffer = malloc(bufSize);
-        int receivedBytes = recv(clientSocket, buffer, bufSize, 0);
+        ssize_t receivedBytes = recv(clientSocket, buffer, bufSize, 0);
         if (receivedBytes < 0)
         {
             std::cerr << "Error receiving message from socket: " << clientSocket << '\n';
