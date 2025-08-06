@@ -56,6 +56,10 @@ public:
 			"create-event-type",
 			new CreateEventTypeHandler(*m_EventSystem)
 		);
+		m_TcpRequestHandlerService->RegisterStrategy(
+			"produce-event",
+			new ProduceEventHandler(*m_EventSystem)
+		);
 	}
 
 	void Start()
