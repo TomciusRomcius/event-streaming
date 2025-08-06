@@ -7,7 +7,7 @@ class TcpSocketMessenger
 {
 public:
     explicit TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool);
-    bool SendRequest(const std::vector<unsigned int>& targetSockets, std::string message);
+    bool SendRequest(const std::vector<unsigned int>& targetSockets, std::string message) const;
 private:
     TcpConnectionPool& m_TcpConnectionPool;
 };
