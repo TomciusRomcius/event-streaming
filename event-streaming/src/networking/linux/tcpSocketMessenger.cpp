@@ -8,7 +8,7 @@ TcpSocketMessenger::TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool)
 {
 }
 
-bool TcpSocketMessenger::SendRequest(std::vector<unsigned int>& targetSockets, std::string message)
+bool TcpSocketMessenger::SendRequest(const std::vector<unsigned int>& targetSockets, std::string message)
 {
 	for (auto socket : targetSockets)
 	{
