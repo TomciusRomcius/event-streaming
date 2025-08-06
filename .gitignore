@@ -40,8 +40,9 @@
 # debug information files
 *.dwo
 
-# Visual studio cfg
+# IDE cfg
 .vs
+.vscode
 
 # build
 out
