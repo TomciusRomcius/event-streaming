@@ -12,4 +12,5 @@ endif()
 project ("event-streaming")
 
 # Include sub-projects.
+add_subdirectory(vendor/spdlog)
 add_subdirectory ("event-streaming")

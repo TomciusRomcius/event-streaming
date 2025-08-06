@@ -14,6 +14,7 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_MakeAvailable(json)
 
 target_link_libraries(event-streaming PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(event-streaming PRIVATE spdlog)
 
 if (WIN32)
   target_link_libraries(event-streaming ws2_32.lib)
