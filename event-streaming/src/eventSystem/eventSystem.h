@@ -2,13 +2,17 @@
 
 #include "event.h"
 #include "../application/logging.h"
+#include "../networking/linux/tcpSocketMessenger.h"
 #include <iostream>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 class EventSystem
 {
 public:
-	EventSystem() = default;
+	explicit EventSystem(TcpSocketMessenger& tcpSocketMessenger)
+		: m_TcpSocketMessenger(tcpSocketMessenger)
+	{ }
 
 	void RegisterEventType(std::unique_ptr<EventType>&& eventType)
 	{
@@ -81,12 +85,29 @@ private:
 		for (unsigned int socket : it->second)
 		{
 			LOG_DEBUG("Sending event '{}' to socket '{}'", event.GetName(), socket);
+			const std::unordered_map<std::string, std::unique_ptr<IProperty>>& props = event.GetProperties();
+			nlohmann::json jsonMessage;
+			for (const auto& entry : props)
+			{
+				IProperty* property = entry.second.get();
+				if (property->GetPropertyType() == PropertyType::STRING)
+				{
+					auto strProperty = dynamic_cast<StringProperty*>(property);
+					if (!strProperty)
+					{
+						continue;
+					}
+					jsonMessage[entry.first] = strProperty->GetValue();
+				}
+			}
+			m_TcpSocketMessenger.SendRequest({socket}, nlohmann::to_string(jsonMessage));
 		}
 	}
 
 private:
 	// event type name -> ipAddresses
 	// TODO: linked list may be better for performance on higher loads
+	const TcpSocketMessenger& m_TcpSocketMessenger;
 	std::vector<Event> m_Events;
 	std::unordered_map<std::string, std::unique_ptr<EventType>> m_EventTypes;
 	std::unordered_map<std::string, std::vector<unsigned int>> m_Subscribers;

@@ -5,11 +5,12 @@
 #include <string>
 #include <memory>
 #include "eventProperty.h"
+#include <unordered_map>
 
 class EventType
 {
 public:
-	EventType(std::string name, std::unordered_map<std::string, PropertyType>&& properties)
+	explicit EventType(std::string name, std::unordered_map<std::string, PropertyType>&& properties)
 		: m_Name(name), m_Properties(std::move(properties))
 	{
 
@@ -51,6 +52,11 @@ public:
 	inline std::string GetName() const
 	{
 		return m_EventType;
+	}
+
+	inline const std::unordered_map<std::string, std::unique_ptr<IProperty>>& GetProperties() const
+	{
+		return m_Values;
 	}
 
 private:
