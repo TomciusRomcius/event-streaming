@@ -98,3 +98,22 @@ private:
     }
     EventSystem& m_EventSystem;
 };
+
+class SubscribeToEventHandler : public ITcpRequestHandler
+{
+public:
+    explicit SubscribeToEventHandler(EventSystem& eventSystem)
+        : m_EventSystem(eventSystem)
+    { }
+
+    void Execute(TcpRequest request) override
+    {
+        nlohmann::json json = request.body;
+        LOG_TRACE("Entered SubscribeToEventHandler::Execute");
+        std::string eventTypeName = json["eventType"];
+        LOG_DEBUG("Retrieved event type name: '{}'", eventTypeName);
+        m_EventSystem.Subscribe(eventTypeName, request.socket);
+    }
+private:
+    EventSystem& m_EventSystem;
+};

@@ -40,7 +40,6 @@ public:
 		SPDLOG_TRACE("Entered Application::Application");
 		
 		unsigned int serverPort = 9000;
-		m_EventSystem = std::make_unique<EventSystem>();
 		m_TcpConnectionPool = std::make_unique<TcpConnectionPool>();
 
 		m_TcpConnectionManager = std::make_unique<TcpSocketConnectionManager>(*m_TcpConnectionPool, serverPort);
@@ -49,7 +48,7 @@ public:
 		m_TcpSocketMessenger = std::make_unique<TcpSocketMessenger>(*m_TcpConnectionPool);
 		m_TcpMessageReceiver = std::make_unique<TcpMessageReceiver>(*m_TcpConnectionPool);
 		m_TcpRequestHandlerService = std::make_unique<TcpRequestHandlerService>();
-		m_EventSystem = std::make_unique<EventSystem>();
+		m_EventSystem = std::make_unique<EventSystem>(EventSystem(*m_TcpSocketMessenger));
 
 		RegisterRequestStrategies();
 	}
@@ -65,6 +64,11 @@ public:
 		m_TcpRequestHandlerService->RegisterStrategy(
 			"produce-event",
 			new ProduceEventHandler(*m_EventSystem)
+		);
+
+		m_TcpRequestHandlerService->RegisterStrategy(
+			"subscribe-to-event-type",
+			new SubscribeToEventHandler(*m_EventSystem)
 		);
 	}
 
