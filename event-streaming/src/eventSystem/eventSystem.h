@@ -25,29 +25,29 @@ public:
 		m_EventTypes[eventType->GetName()] = std::move(eventType);
 	}
 
-	void Subscribe(std::string eventType, std::string ipAddress)
+	void Subscribe(std::string eventType, unsigned int socket)
 	{
 		LOG_TRACE("Entered EventSystem::Subscribe");
-		LOG_DEBUG("Subscribing host: {} to event type: {}", ipAddress, eventType);
+		LOG_DEBUG("Subscribing socket: {} to event type: {}", socket, eventType);
 
 		auto it = m_Subscribers.find(eventType);
 		if (it == m_Subscribers.end())
 		{
 			LOG_ERROR(
-				"Subscription failed: event type '{}' not found for host '{}'",
+				"Subscription failed: event type '{}' not found for socket '{}'",
 				eventType,
-				ipAddress
+				socket
 			);
 			return;
 		}
 		else
 		{
 			LOG_DEBUG("Pushing host to m_Subscribers list");
-			it->second.push_back(ipAddress);
+			it->second.push_back(socket);
 		}
 	}
 
-	void Unsubscribe(const EventType& eventType, const std::string& ipAddress)
+	void Unsubscribe(const EventType& eventType, unsigned int socket)
 	{
 		LOG_TRACE("Entered EventSystem::Unsubscribe");
 	}
@@ -78,9 +78,9 @@ private:
 			throw std::runtime_error("Publish failed: fvent type has not been registered!");
 		}
 
-		for (std::string ipAddress : it->second)
+		for (unsigned int socket : it->second)
 		{
-			LOG_DEBUG("Sending event '{}' to '{}'", event.GetName(), ipAddress);
+			LOG_DEBUG("Sending event '{}' to socket '{}'", event.GetName(), socket);
 		}
 	}
 
@@ -89,5 +89,5 @@ private:
 	// TODO: linked list may be better for performance on higher loads
 	std::vector<Event> m_Events;
 	std::unordered_map<std::string, std::unique_ptr<EventType>> m_EventTypes;
-	std::unordered_map<std::string, std::vector<std::string>> m_Subscribers;
+	std::unordered_map<std::string, std::vector<unsigned int>> m_Subscribers;
 };

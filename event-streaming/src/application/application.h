@@ -74,9 +74,9 @@ public:
 		while (true)
 		{
 			m_TcpConnectionManager->TryAcceptIncomingConnection();
-			m_TcpMessageReceiver->TryReceiveMessage([this](std::string message) 
+			m_TcpMessageReceiver->TryReceiveMessage([this](std::string message, unsigned int socket) 
 			{ 
-				HandleTcpMessage(message); 
+				HandleTcpMessage(message, socket); 
 			});
 
 			sleep(1); // Release current thread so we don't overwork the thread for now
@@ -84,7 +84,7 @@ public:
 	}
 
 private:
-	void HandleTcpMessage(std::string message)
+	void HandleTcpMessage(std::string message, unsigned int socket)
 	{
 		LOG_TRACE("Entered Application::HandleTcpMessage");
 		try 
@@ -92,7 +92,7 @@ private:
 			auto js = nlohmann::json::parse(message);
 			std::string type = GetTcpRequestType(js);
 			LOG_DEBUG("Request type: '{}'", type);
-			m_TcpRequestHandlerService->TryExecuteStrategy(type, js);
+			m_TcpRequestHandlerService->TryExecuteStrategy(type, TcpRequest(socket, js));
 		}
 		catch (nlohmann::json_abi_v3_12_0::detail::type_error ex)
 		{

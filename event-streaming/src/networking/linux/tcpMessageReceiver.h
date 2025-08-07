@@ -7,7 +7,8 @@ class TcpMessageReceiver
 {
 public:
     TcpMessageReceiver(TcpConnectionPool& tcpConnectionPool);
-    void TryReceiveMessage(const std::function<void(std::string)>& messageHandler) const;
+    /// @param messageHandler A lambda that takes in a message body and socket
+    void TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler) const;
 private:
     TcpConnectionPool& m_TcpConnectionPool;
 };

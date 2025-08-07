@@ -11,7 +11,7 @@ TcpMessageReceiver::TcpMessageReceiver(TcpConnectionPool& tcpConnectionPool)
 
 }
 
-void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string)>& messageHandler) const
+void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler) const
 {
     fd_set socketFdSet;
     FD_ZERO(&socketFdSet);
@@ -67,6 +67,6 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string)
         std::string message((char*)buffer, receivedBytes);
         LOG_DEBUG("Received message: '{}'", message);
         free(buffer);
-        messageHandler(message); // Call the provided message handler with the received message
+        messageHandler(message, clientSocket); // Call the provided message handler with the received message
     }
 }

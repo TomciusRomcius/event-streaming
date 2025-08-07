@@ -3,11 +3,12 @@
 #include <nlohmann/json.hpp>
 #include "logging.h"
 #include "../eventSystem/eventSystem.h"
+#include "../networking/shared/tcpRequest.h"
 
 class ITcpRequestHandler
 {
 public:
-    virtual void Execute(nlohmann::json json) = 0;
+    virtual void Execute(TcpRequest request) = 0;
     virtual ~ITcpRequestHandler() = default;
 };
 
@@ -18,11 +19,12 @@ public:
         : m_EventSystem(eventSystem)
     { }
 
-    void Execute(nlohmann::json json) override
+    void Execute(TcpRequest request) override
     {
         LOG_TRACE("Enetered CreateEventTypeHandler::Execute");
         // TODO: move to_string to macro as even when log level is higher than debug
         // json serialization still happens
+        nlohmann::json json = request.body;
         LOG_DEBUG("CreateEventTypeHandler request json: '{}'", nlohmann::to_string(json));
         // TODO: error checking + set max length
         std::string eventTypeName = json["eventType"];
@@ -54,11 +56,12 @@ public:
         : m_EventSystem(eventSystem)
     { }
 
-    void Execute(nlohmann::json json) override
+    void Execute(TcpRequest request) override
     {
         LOG_TRACE("Enetered ProduceEventHandler::Execute");
         // TODO: move to_string to macro as even when log level is higher than debug
         // json serialization still happens
+        nlohmann::json json = request.body;
         LOG_DEBUG("CreateEventTypeHandler request json: '{}'", nlohmann::to_string(json));
         std::string eventTypeName = json["eventType"];
         LOG_DEBUG("Retrieved event type name: '{}'", eventTypeName);
