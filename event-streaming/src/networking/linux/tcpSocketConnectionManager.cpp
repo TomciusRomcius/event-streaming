@@ -1,4 +1,5 @@
 #include "tcpSocketConnectionManager.h"
+#include "../../application/logging.h"
 #include <asm-generic/socket.h>
 #include <cstring>
 #include <iostream>
@@ -18,30 +19,32 @@ TcpSocketConnectionManager::~TcpSocketConnectionManager()
 
 void TcpSocketConnectionManager::InitializeServerSocket()
 {
-	std::cout << "Initializing server socket on port " << m_ServerPort << '\n';
+	LOG_INFO("Initializing server socket on port: {}", m_ServerPort);
 	m_ServerSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (m_ServerSocket == -1)
 	{
-		std::cerr << std::strerror(errno) << '\n';
+		LOG_ERROR("Failed to setup server socket: '{}'" , std::strerror(errno));
 		throw std::runtime_error("Failed to create server socket");
 	}
 	int opt = 1;
 	if (setsockopt(m_ServerSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 	{
-		std::cerr << std::strerror(errno) << '\n';
+		LOG_ERROR("Failed to setup server socket options: '{}'" , std::strerror(errno));
 		throw std::runtime_error("Failed to set socket options");
 	}
 	m_ServerAddress.sin_family = AF_INET;
 	m_ServerAddress.sin_port = htons(m_ServerPort);
 	m_ServerAddress.sin_addr.s_addr = INADDR_ANY;
-
+	
 	if (bind(m_ServerSocket, (sockaddr*)&m_ServerAddress, sizeof(m_ServerAddress)) == -1)
 	{
-		std::cerr << std::strerror(errno) << '\n';
+		LOG_ERROR("Failed to bind server socket to server address: '{}'" , std::strerror(errno));
 		throw std::runtime_error("Failed to bind server socket");
 	}
+
 	if (listen(m_ServerSocket, 5) == -1)
 	{
+		LOG_ERROR("Failed to setup server socket listener: '{}'", std::strerror(errno));
 		throw std::runtime_error("Failed to setup server socket listener");
 	}
 }
@@ -65,17 +68,17 @@ void TcpSocketConnectionManager::TryAcceptIncomingConnection()
 
 	if (selectResult == -1)
 	{
-		std::cerr << "An error occured while examining socket file descriptor" << '\n';
+		LOG_ERROR("An error occured while examining socket file descriptor: '{}'", std::strerror(errno));
 		return;
 	}
 
-	std::cout << "Incoming tcp connection!" << '\n';
+	LOG_DEBUG("Incoming tcp connection");
 	sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
 	int clientSocket = accept(m_ServerSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 	if (clientSocket == -1)
 	{
-		std::cerr << "An error occured while accepting an incoming TCP connection" << '\n';
+		LOG_ERROR("An error occured while accepting an incoming TCP connection: {}", std::strerror(errno));
 		return;
 	}
 

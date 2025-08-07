@@ -13,12 +13,17 @@ public:
 
     bool TryExecuteStrategy(std::string requestType, nlohmann::json requestJson)
     {
+        LOG_TRACE("Entered TcpRequestHandlerService::TryExecuteStrategy");
+        LOG_DEBUG("Trying to execute strategy for request type: '{}'", requestType);
         auto strategyIt = m_StrategyMap.find(requestType);
         if (strategyIt != m_StrategyMap.end())
         {
+            LOG_DEBUG("Strategy for '{}' found!", requestType);
             (*strategyIt).second->Execute(requestJson);
             return true;
         }
+
+        LOG_WARN("Strategy for '{}' not found!", requestType);
         return false;
     }
 

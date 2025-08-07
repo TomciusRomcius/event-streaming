@@ -4,16 +4,18 @@
 #include <string>
 #include <unistd.h>
 #include <iostream>
+#include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 #include "../networking/linux/tcpSocketConnectionManager.h"
 #include "../networking/linux/tcpSocketMessenger.h"
 #include "../networking/linux/tcpMessageReceiver.h"
 #include "../networking/shared/tcpRequest.h"
 #include "../eventSystem/eventSystem.h"
-#include <nlohmann/json.hpp>
 #include "tcpRequestHandlerService.h"
 
 std::string GetTcpRequestType(nlohmann::json json)
 {
+	// SPDLOG_TRACE("Entered GetTcpRequestType");
 	if (!json.contains("type"))
 	{
 		std::cerr << "Failed to get TCP request type" << '\n';
@@ -34,6 +36,9 @@ class Application
 public:
 	Application()
 	{
+		spdlog::set_level(spdlog::level::trace);
+		SPDLOG_TRACE("Entered Application::Application");
+		
 		unsigned int serverPort = 9000;
 		m_EventSystem = std::make_unique<EventSystem>();
 		m_TcpConnectionPool = std::make_unique<TcpConnectionPool>();
@@ -51,6 +56,7 @@ public:
 
 	void RegisterRequestStrategies()
 	{
+		LOG_TRACE("Entered Application::RegisterRequestStrategies");
 		// Strategies are owned by handler service
 		m_TcpRequestHandlerService->RegisterStrategy(
 			"create-event-type",
@@ -64,7 +70,8 @@ public:
 
 	void Start()
 	{
-		while (1)
+		LOG_TRACE("Entered Application::Start");
+		while (true)
 		{
 			m_TcpConnectionManager->TryAcceptIncomingConnection();
 			m_TcpMessageReceiver->TryReceiveMessage([this](std::string message) 
@@ -79,17 +86,17 @@ public:
 private:
 	void HandleTcpMessage(std::string message)
 	{
+		LOG_TRACE("Entered Application::HandleTcpMessage");
 		try 
 		{
 			auto js = nlohmann::json::parse(message);
 			std::string type = GetTcpRequestType(js);
-			std::cout << "type: " << type << '\n';
-			std::cout << "Failed to get request type" << '\n';
+			LOG_DEBUG("Request type: '{}'", type);
 			m_TcpRequestHandlerService->TryExecuteStrategy(type, js);
 		}
 		catch (nlohmann::json_abi_v3_12_0::detail::type_error ex)
 		{
-			std::cerr << ex.what() << '\n';
+			LOG_ERROR(ex.what());
 		}
 		catch (...)
 		{

@@ -13,8 +13,6 @@ TcpMessageReceiver::TcpMessageReceiver(TcpConnectionPool& tcpConnectionPool)
 
 void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string)>& messageHandler) const
 {
-    std::cout << "TryReceiveMessage" << '\n';
-    
     fd_set socketFdSet;
     FD_ZERO(&socketFdSet);
 
@@ -35,8 +33,15 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string)
     timeout.tv_usec = 10000;
     int selectResult = select(maxFd + 1, &socketFdSet, nullptr, nullptr, &timeout);
     
-    if (selectResult <= 0)
+    if (selectResult == 0)
+        return;
+
+    if (selectResult == -1)
     {
+        LOG_ERROR(
+            "Failed to determine status of sockets: select() failed'{}'",
+            std::strerror(errno)
+        );
         return;
     }
 
@@ -44,19 +49,23 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string)
     {
         if (!FD_ISSET(clientSocket, &socketFdSet))
             continue;
-        std::cout << "Checking socket: " << clientSocket << '\n';
-        std::cout << "Socket " << clientSocket << " is ready to read.\n";
+        LOG_DEBUG("Socket {} is ready to read", clientSocket);
         int bufSize = 1024;
         void* buffer = malloc(bufSize);
         ssize_t receivedBytes = recv(clientSocket, buffer, bufSize, 0);
         if (receivedBytes < 0)
         {
-            std::cerr << "Error receiving message from socket: " << clientSocket << '\n';
+            LOG_ERROR(
+                "Failed to read incoming data for socket {}: '{}'",
+                clientSocket,
+                std::strerror(errno)
+            );
             free(buffer);
             continue; // Skip to the next socket
         }
 
         std::string message((char*)buffer, receivedBytes);
+        LOG_DEBUG("Received message: '{}'", message);
         free(buffer);
         messageHandler(message); // Call the provided message handler with the received message
     }

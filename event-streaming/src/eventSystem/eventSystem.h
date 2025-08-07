@@ -1,6 +1,7 @@
 #pragma once
 
 #include "event.h"
+#include "../application/logging.h"
 #include <iostream>
 #include <vector>
 
@@ -11,9 +12,13 @@ public:
 
 	void RegisterEventType(std::unique_ptr<EventType>&& eventType)
 	{
+		LOG_TRACE("Entered EventSystem::RegisterEventType");
+		LOG_INFO("Registering event: '{}'", eventType->GetName());
+
 		if (m_Subscribers.find(eventType->GetName()) != m_Subscribers.end())
 		{
-			throw std::runtime_error("Event type already registered.");
+			LOG_ERROR("{} event type has already been registered!", eventType->GetName());
+			return;
 		}
 		
 		m_Subscribers[eventType->GetName()] = {};
@@ -22,27 +27,39 @@ public:
 
 	void Subscribe(std::string eventType, std::string ipAddress)
 	{
+		LOG_TRACE("Entered EventSystem::Subscribe");
+		LOG_DEBUG("Subscribing host: {} to event type: {}", ipAddress, eventType);
+
 		auto it = m_Subscribers.find(eventType);
 		if (it == m_Subscribers.end())
 		{
-			throw std::invalid_argument("Event type has not been registered");
+			LOG_ERROR(
+				"Subscription failed: event type '{}' not found for host '{}'",
+				eventType,
+				ipAddress
+			);
+			return;
 		}
 		else
 		{
+			LOG_DEBUG("Pushing host to m_Subscribers list");
 			it->second.push_back(ipAddress);
 		}
 	}
 
-	void Unsubscribe(EventType& eventType, std::string ipAddress)
+	void Unsubscribe(const EventType& eventType, const std::string& ipAddress)
 	{
+		LOG_TRACE("Entered EventSystem::Unsubscribe");
 	}
 
 	void ProduceEvent(Event&& event)
 	{
+		LOG_TRACE("Entered EventSystem::ProduceEvent");
+		LOG_DEBUG("Producing event: {}", event.GetName());
 		// TODO: store
 		if (m_EventTypes.find(event.GetName()) == m_EventTypes.end())
 		{
-			std::cout << "WARNING: trying to produce event when the event type does not exist " << '\n';
+			LOG_ERROR("ProduceEvent failed: event type '{}' does not exist!", event.GetName());
 			return;
 		}
 
@@ -53,15 +70,17 @@ public:
 private:
 	void Publish(Event& event)
 	{
+		LOG_TRACE("Entered EventSystem::Publish");
+		LOG_DEBUG("Publishing event type: '{}'", event.GetName());
 		auto it = m_Subscribers.find(event.GetName());
 		if (it == m_Subscribers.end())
 		{
-			throw std::runtime_error("Event type has not been registered!");
+			throw std::runtime_error("Publish failed: fvent type has not been registered!");
 		}
 
 		for (std::string ipAddress : it->second)
 		{
-			std::cout << "Sending event to: " << ipAddress << '\n';
+			LOG_DEBUG("Sending event '{}' to '{}'", event.GetName(), ipAddress);
 		}
 	}
 

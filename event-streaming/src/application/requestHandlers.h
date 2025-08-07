@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include "logging.h"
 #include "../eventSystem/eventSystem.h"
 
 class ITcpRequestHandler
@@ -19,9 +20,13 @@ public:
 
     void Execute(nlohmann::json json) override
     {
-        std::cout << "Reached CreateEventTypeHandler" << '\n';
+        LOG_TRACE("Enetered CreateEventTypeHandler::Execute");
+        // TODO: move to_string to macro as even when log level is higher than debug
+        // json serialization still happens
+        LOG_DEBUG("CreateEventTypeHandler request json: '{}'", nlohmann::to_string(json));
         // TODO: error checking + set max length
         std::string eventTypeName = json["eventType"];
+        LOG_DEBUG("Retrieved event type name: '{}'", eventTypeName);
         auto propsArray = json["properties"];
  
         std::unordered_map<std::string, PropertyType> props;
@@ -29,6 +34,7 @@ public:
         {
             std::string propName = (*it)["key"];
             PropertyType propType = (*it)["type"];
+            LOG_DEBUG("Retrieved property key: '{}', type: '{}'", propName, (int)propType);
             props[propName] = propType;
         }
 
@@ -50,13 +56,19 @@ public:
 
     void Execute(nlohmann::json json) override
     {
+        LOG_TRACE("Enetered ProduceEventHandler::Execute");
+        // TODO: move to_string to macro as even when log level is higher than debug
+        // json serialization still happens
+        LOG_DEBUG("CreateEventTypeHandler request json: '{}'", nlohmann::to_string(json));
         std::string eventTypeName = json["eventType"];
+        LOG_DEBUG("Retrieved event type name: '{}'", eventTypeName);
         auto propsArray = json["properties"];
         std::unordered_map<std::string, std::unique_ptr<IProperty>> props;
         for (auto it = propsArray.begin(); it != propsArray.end(); ++it)
         {
             std::string propName = (*it)["key"];
             IProperty* property = ParseProperty(*it);
+            LOG_DEBUG("Retrieved property key: '{}', type: '{}'", propName, (int)property->GetPropertyType());
             if (property != nullptr)
             {
                 props[propName] = std::unique_ptr<IProperty>(property);
@@ -70,6 +82,7 @@ public:
 private:
     IProperty* ParseProperty(nlohmann::json propJson)
     {
+        LOG_TRACE("Enetered ProduceEventHandler::ParseProperty");
         using value_t = nlohmann::json::value_t;
         auto propType = propJson["value"].type();
         switch (propType)
