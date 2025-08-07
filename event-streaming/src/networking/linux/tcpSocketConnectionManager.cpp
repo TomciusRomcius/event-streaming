@@ -32,7 +32,7 @@ void TcpSocketConnectionManager::InitializeServerSocket()
 		throw std::runtime_error("Failed to set socket options");
 	}
 	m_ServerAddress.sin_family = AF_INET;
-	m_ServerAddress.sin_port = htons(9000);
+	m_ServerAddress.sin_port = htons(m_ServerPort);
 	m_ServerAddress.sin_addr.s_addr = INADDR_ANY;
 
 	if (bind(m_ServerSocket, (sockaddr*)&m_ServerAddress, sizeof(m_ServerAddress)) == -1)
