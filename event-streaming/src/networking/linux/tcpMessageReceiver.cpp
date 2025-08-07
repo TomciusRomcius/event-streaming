@@ -64,7 +64,11 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
             continue; // Skip to the next socket
         }
 
-        std::string message((char*)buffer, receivedBytes);
+        if (receivedBytes > bufSize)
+        {
+            LOG_WARN("Received more bytes than was allocated in the buffer");
+        }
+        std::string message((char*)buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
         LOG_DEBUG("Received message: '{}'", message);
         free(buffer);
         messageHandler(message, clientSocket); // Call the provided message handler with the received message
