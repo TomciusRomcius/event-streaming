@@ -62,7 +62,7 @@ public:
         // TODO: move to_string to macro as even when log level is higher than debug
         // json serialization still happens
         nlohmann::json json = request.body;
-        LOG_DEBUG("CreateEventTypeHandler request json: '{}'", nlohmann::to_string(json));
+        LOG_DEBUG("ProduceEventHandler request json: '{}'", nlohmann::to_string(json));
         std::string eventTypeName = json["eventType"];
         LOG_DEBUG("Retrieved event type name: '{}'", eventTypeName);
         auto propsArray = json["properties"];
