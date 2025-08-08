@@ -53,6 +53,11 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
         int bufSize = 1024;
         void* buffer = malloc(bufSize);
         ssize_t receivedBytes = recv(clientSocket, buffer, bufSize, 0);
+        if (receivedBytes == 0) // Connection closed
+        {
+            m_TcpConnectionPool.RemoveClientSocket(clientSocket);
+            continue;
+        }
         if (receivedBytes < 0)
         {
             LOG_ERROR(
