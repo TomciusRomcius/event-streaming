@@ -102,6 +102,11 @@ private:
 		{
 			LOG_ERROR(ex.what());
 		}
+    	
+		catch (const std::exception& e) {
+        	std::cerr << "std::exception: " << e.what() << '\n';
+    	}	
+
 		catch (...)
 		{
 			std::cerr << "Unknown exception was thrown while executing strategy" << '\n';
