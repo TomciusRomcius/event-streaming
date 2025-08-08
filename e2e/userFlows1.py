@@ -11,11 +11,11 @@ createEventTypeReq = """
     "properties": [
         {
             "key": "Key1",
-            "type": 0 
+            "type": 0
         },
         {
             "key": "Key2",
-            "type": 0 
+            "type": 1
         }
     ] 
 }
@@ -39,7 +39,7 @@ produceEventReq = """
         },
         {
             "key": "Key2",
-            "value": "Cool value2"
+            "value": 2.99
         }
     ] 
 }
