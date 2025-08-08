@@ -10,12 +10,16 @@ createEventTypeReq = """
     "eventType": "test-event",
     "properties": [
         {
-            "key": "Key1",
+            "key": "strProp",
             "type": 0
         },
         {
-            "key": "Key2",
+            "key": "numProp",
             "type": 1
+        },
+        {
+            "key": "boolProp",
+            "type": 2
         }
     ] 
 }
@@ -34,12 +38,16 @@ produceEventReq = """
     "eventType": "test-event",
     "properties": [
         {
-            "key": "Key1",
+            "key": "strProp",
             "value": "Cool value"
         },
         {
-            "key": "Key2",
+            "key": "numProp",
             "value": 2.99
+        },
+        {
+            "key": "boolProp",
+            "value": true
         }
     ] 
 }
