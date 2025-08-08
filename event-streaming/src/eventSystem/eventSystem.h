@@ -109,6 +109,15 @@ private:
 					}
 					jsonMessage[entry.first] = numProperty->GetValue();
 				}
+				else if (propertyType == PropertyType::BOOLEAN)
+				{
+					auto boolProperty = dynamic_cast<BooleanProperty*>(property);
+					if (!boolProperty)
+					{
+						continue;
+					}
+					jsonMessage[entry.first] = boolProperty->GetValue();
+				}
 			}
 			m_TcpSocketMessenger.SendRequest({socket}, nlohmann::to_string(jsonMessage));
 		}

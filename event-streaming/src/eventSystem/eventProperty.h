@@ -6,6 +6,7 @@ enum class PropertyType
 {
 	STRING = 0,
 	NUMBER,
+    BOOLEAN
 };
 
 class IProperty
@@ -53,4 +54,24 @@ public:
     }
 private:
     double m_Value;
+};
+
+class BooleanProperty : public IProperty
+{
+public:
+    explicit BooleanProperty(bool value)
+        : m_Value(value)
+    { }
+
+    PropertyType GetPropertyType() override
+    {
+        return PropertyType::BOOLEAN;
+    }
+
+    inline bool GetValue() const
+    {
+        return m_Value;
+    }
+private:
+    bool m_Value;
 };

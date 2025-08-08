@@ -98,6 +98,10 @@ private:
         {
             return new NumberProperty(propJson["value"]);
         }
+        else if (propType == value_t::boolean)
+        {
+            return new BooleanProperty(propJson["value"]);
+        }
     }
     EventSystem& m_EventSystem;
 };
