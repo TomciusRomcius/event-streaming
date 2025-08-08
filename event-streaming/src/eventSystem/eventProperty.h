@@ -5,8 +5,7 @@
 enum class PropertyType
 {
 	STRING = 0,
-	INT,
-	DECIMAL
+	NUMBER,
 };
 
 class IProperty
@@ -34,4 +33,24 @@ public:
     }
 private:
     std::string m_Value;
+};
+
+class NumberProperty : public IProperty
+{
+public:
+    explicit NumberProperty(double value)
+        : m_Value(value)
+    { }
+
+    PropertyType GetPropertyType() override
+    {
+        return PropertyType::NUMBER;
+    }
+
+    inline double GetValue() const
+    {
+        return m_Value;
+    }
+private:
+    double m_Value;
 };

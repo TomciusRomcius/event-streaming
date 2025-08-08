@@ -88,12 +88,15 @@ private:
         LOG_TRACE("Enetered ProduceEventHandler::ParseProperty");
         using value_t = nlohmann::json::value_t;
         auto propType = propJson["value"].type();
-        switch (propType)
+        if (propType == value_t::string)
         {
-        case value_t::string:
             return new StringProperty(propJson["value"]);
-        default:
-            return nullptr;
+        }
+        else if (propType == value_t::number_integer || 
+            propType == value_t::number_unsigned ||
+            propType == value_t::number_float)
+        {
+            return new NumberProperty(propJson["value"]);
         }
     }
     EventSystem& m_EventSystem;

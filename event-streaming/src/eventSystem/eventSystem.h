@@ -90,7 +90,8 @@ private:
 			for (const auto& entry : props)
 			{
 				IProperty* property = entry.second.get();
-				if (property->GetPropertyType() == PropertyType::STRING)
+				PropertyType propertyType = property->GetPropertyType();
+				if (propertyType == PropertyType::STRING)
 				{
 					auto strProperty = dynamic_cast<StringProperty*>(property);
 					if (!strProperty)
@@ -98,6 +99,15 @@ private:
 						continue;
 					}
 					jsonMessage[entry.first] = strProperty->GetValue();
+				}
+				else if (propertyType == PropertyType::NUMBER)
+				{
+					auto numProperty = dynamic_cast<NumberProperty*>(property);
+					if (!numProperty)
+					{
+						continue;
+					}
+					jsonMessage[entry.first] = numProperty->GetValue();
 				}
 			}
 			m_TcpSocketMessenger.SendRequest({socket}, nlohmann::to_string(jsonMessage));
