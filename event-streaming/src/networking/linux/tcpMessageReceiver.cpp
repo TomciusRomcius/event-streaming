@@ -4,14 +4,16 @@
 #include <iostream>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include "../../application/utils.h"
+#include <sys/ioctl.h>
 
-TcpMessageReceiver::TcpMessageReceiver(TcpConnectionPool& tcpConnectionPool)
-    : m_TcpConnectionPool(tcpConnectionPool)
-{
+TcpMessageReceiver::TcpMessageReceiver(
+    TcpSocketConnectionManager& tcpSocketConnectionManager,
+    TcpConnectionPool& tcpConnectionPool)
+    : m_TcpSocketConnectionManager(tcpSocketConnectionManager), m_TcpConnectionPool(tcpConnectionPool)
+{ }
 
-}
-
-void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler) const
+void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler)
 {
     fd_set socketFdSet;
     FD_ZERO(&socketFdSet);
@@ -50,32 +52,56 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
         if (!FD_ISSET(clientSocket, &socketFdSet))
             continue;
         LOG_DEBUG("Socket {} is ready to read", clientSocket);
-        int bufSize = 1024;
-        void* buffer = malloc(bufSize);
-        ssize_t receivedBytes = recv(clientSocket, buffer, bufSize, 0);
-        if (receivedBytes == 0) // Connection closed
+
+        if (m_ProcessingSocketsToMsgSize.contains(clientSocket))
         {
-            m_TcpConnectionPool.RemoveClientSocket(clientSocket);
-            continue;
-        }
-        if (receivedBytes < 0)
-        {
-            LOG_ERROR(
-                "Failed to read incoming data for socket {}: '{}'",
-                clientSocket,
-                std::strerror(errno)
-            );
+            int bufSize = m_ProcessingSocketsToMsgSize.at(clientSocket);
+            void* buffer = malloc(bufSize);
+            ssize_t receivedBytes = recv(clientSocket, buffer, bufSize, 0);
+            if (receivedBytes == 0) // Connection closed
+            {
+                m_TcpConnectionPool.RemoveClientSocket(clientSocket);
+                continue;
+            }
+            if (receivedBytes < 0)
+            {
+                LOG_ERROR(
+                    "Failed to read incoming data for socket {}: '{}'",
+                    clientSocket,
+                    std::strerror(errno)
+                );
+                free(buffer);
+                continue; // Skip to the next socket
+            }
+
+            if (receivedBytes != bufSize)
+            {
+                LOG_WARN("Malformed request");
+                m_TcpSocketConnectionManager.TerminateConnection(clientSocket);
+                continue;
+            }
+            std::string message((char*)buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
+            LOG_DEBUG("Received message: '{}'", message);
             free(buffer);
-            continue; // Skip to the next socket
+            m_ProcessingSocketsToMsgSize.erase(clientSocket);
+            messageHandler(message, clientSocket); // Call the provided message handler with the received message
         }
 
-        if (receivedBytes > bufSize)
+        else
         {
-            LOG_WARN("Received more bytes than was allocated in the buffer");
+            LOG_DEBUG("Reading request body size");
+            int bufSize = 4;
+            void* buffer = malloc(bufSize);
+            if (recv(clientSocket, buffer, bufSize, 0) == 0)
+            {
+                m_TcpConnectionPool.RemoveClientSocket(clientSocket);
+                continue;
+            }
+
+            uint32_t requestBytes = BigEndianToHost32(*(uint32_t*)buffer);
+            LOG_DEBUG("Socket {} message size is {}", clientSocket, requestBytes);
+            m_ProcessingSocketsToMsgSize.insert({clientSocket, requestBytes});
+            free(buffer);
         }
-        std::string message((char*)buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
-        LOG_DEBUG("Received message: '{}'", message);
-        free(buffer);
-        messageHandler(message, clientSocket); // Call the provided message handler with the received message
     }
 }

@@ -9,7 +9,7 @@ public:
     ~TcpSocketConnectionManager();
     void InitializeServerSocket();
     void TryAcceptIncomingConnection();
-    void TerminateConnection();
+    void TerminateConnection(unsigned int socket);
 private:
     TcpConnectionPool& m_TcpConnectionPool;
     unsigned int m_ServerPort;

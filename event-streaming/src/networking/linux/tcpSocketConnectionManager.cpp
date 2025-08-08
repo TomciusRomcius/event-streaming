@@ -85,8 +85,10 @@ void TcpSocketConnectionManager::TryAcceptIncomingConnection()
 	m_TcpConnectionPool.AddClientSocket(clientSocket);
 }
 
-void TcpSocketConnectionManager::TerminateConnection()
+void TcpSocketConnectionManager::TerminateConnection(unsigned int socket)
 {
-    // TODO: Implement connection termination logic
-    std::cerr << "TerminateConnection not implemented yet." << '\n';
+    SPDLOG_TRACE("Entered TcpSocketConnectionManager::TerminateConnection");
+	SPDLOG_DEBUG("Terminating connection for socket {}", socket);
+	close(socket);
+	m_TcpConnectionPool.RemoveClientSocket(socket);
 }
