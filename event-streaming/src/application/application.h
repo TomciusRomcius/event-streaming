@@ -59,16 +59,16 @@ public:
 		// Strategies are owned by handler service
 		m_TcpRequestHandlerService->RegisterStrategy(
 			"create-event-type",
-			new CreateEventTypeHandler(*m_EventSystem)
+			std::make_unique<CreateEventTypeHandler>(*m_EventSystem)
 		);
 		m_TcpRequestHandlerService->RegisterStrategy(
 			"produce-event",
-			new ProduceEventHandler(*m_EventSystem)
+			std::make_unique<ProduceEventHandler>(*m_EventSystem)
 		);
 
 		m_TcpRequestHandlerService->RegisterStrategy(
 			"subscribe-to-event-type",
-			new SubscribeToEventHandler(*m_EventSystem)
+			std::make_unique<SubscribeToEventHandler>(*m_EventSystem)
 		);
 	}
 

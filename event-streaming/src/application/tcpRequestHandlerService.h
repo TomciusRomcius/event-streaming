@@ -6,9 +6,9 @@
 class TcpRequestHandlerService
 {
 public:
-    void RegisterStrategy(std::string requestType, ITcpRequestHandler* handler)
+    void RegisterStrategy(const std::string& requestType, std::unique_ptr<ITcpRequestHandler>&& handler)
     {
-        m_StrategyMap[requestType] = std::unique_ptr<ITcpRequestHandler>(handler);
+        m_StrategyMap[requestType] = std::move(handler);
     }
 
     bool TryExecuteStrategy(std::string requestType, TcpRequest&& request)
