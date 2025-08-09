@@ -31,7 +31,7 @@ public:
 		m_TcpSocketMessenger = std::make_unique<TcpSocketMessenger>(*m_TcpConnectionPool);
 		m_TcpMessageReceiver = std::make_unique<TcpMessageReceiver>(*m_TcpConnectionManager, *m_TcpConnectionPool);
 		m_TcpRequestHandlerService = std::make_unique<TcpRequestHandlerService>();
-		m_EventSystem = std::make_unique<EventSystem>(EventSystem(*m_TcpSocketMessenger));
+		m_EventSystem = std::make_unique<EventSystem>(*m_TcpSocketMessenger);
 
 		RegisterRequestStrategies();
 	}
