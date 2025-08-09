@@ -65,8 +65,6 @@ public:
 			{ 
 				HandleTcpMessage(message, socket); 
 			});
-
-			sleep(1); // Release current thread so we don't overwork the thread for now
 		}
 	}
 
