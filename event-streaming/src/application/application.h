@@ -12,24 +12,7 @@
 #include "../networking/shared/tcpRequest.h"
 #include "../eventSystem/eventSystem.h"
 #include "tcpRequestHandlerService.h"
-
-std::string GetTcpRequestType(nlohmann::json json)
-{
-	// SPDLOG_TRACE("Entered GetTcpRequestType");
-	if (!json.contains("type"))
-	{
-		std::cerr << "Failed to get TCP request type" << '\n';
-		return "err";
-	}
-
-	if (!json["type"].is_string())
-	{
-		std::cerr << "Failed to get TCP request type" << '\n';
-		return "err";	
-	}
-	
-	return json["type"];
-}
+#include "utils.h"
 
 class Application
 {
@@ -88,7 +71,7 @@ public:
 	}
 
 private:
-	void HandleTcpMessage(std::string message, unsigned int socket)
+	void HandleTcpMessage(const std::string& message, unsigned int socket)
 	{
 		LOG_TRACE("Entered Application::HandleTcpMessage");
 		try 
