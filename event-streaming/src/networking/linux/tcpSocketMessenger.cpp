@@ -51,6 +51,6 @@ bool TcpSocketMessenger::SendRequest(const std::vector<unsigned int>& targetSock
 		}
 	}
 
-	delete(messageBuffer);
+	free(messageBuffer);
 	return true;
 }
