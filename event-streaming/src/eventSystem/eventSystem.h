@@ -85,42 +85,49 @@ private:
 		for (unsigned int socket : it->second)
 		{
 			LOG_DEBUG("Sending event '{}' to socket '{}'", event.GetName(), socket);
-			const std::unordered_map<std::string, std::unique_ptr<IProperty>>& props = event.GetProperties();
-			nlohmann::json jsonMessage;
-			for (const auto& entry : props)
-			{
-				IProperty* property = entry.second.get();
-				PropertyType propertyType = property->GetPropertyType();
-				if (propertyType == PropertyType::STRING)
-				{
-					auto strProperty = dynamic_cast<StringProperty*>(property);
-					if (!strProperty)
-					{
-						continue;
-					}
-					jsonMessage[entry.first] = strProperty->GetValue();
-				}
-				else if (propertyType == PropertyType::NUMBER)
-				{
-					auto numProperty = dynamic_cast<NumberProperty*>(property);
-					if (!numProperty)
-					{
-						continue;
-					}
-					jsonMessage[entry.first] = numProperty->GetValue();
-				}
-				else if (propertyType == PropertyType::BOOLEAN)
-				{
-					auto boolProperty = dynamic_cast<BooleanProperty*>(property);
-					if (!boolProperty)
-					{
-						continue;
-					}
-					jsonMessage[entry.first] = boolProperty->GetValue();
-				}
-			}
-			m_TcpSocketMessenger.SendRequest({socket}, nlohmann::to_string(jsonMessage));
+			std::string formedMessage = FormMessage(event);
+			m_TcpSocketMessenger.SendRequest({socket}, formedMessage);
 		}
+	}
+
+	std::string FormMessage(Event& event)
+	{
+		const std::unordered_map<std::string, std::unique_ptr<IProperty>>& props = event.GetProperties();
+		nlohmann::json jsonMessage;
+		for (const auto& entry : props)
+		{
+			IProperty* property = entry.second.get();
+			PropertyType propertyType = property->GetPropertyType();
+			if (propertyType == PropertyType::STRING)
+			{
+				auto strProperty = dynamic_cast<StringProperty*>(property);
+				if (!strProperty)
+				{
+					continue;
+				}
+				jsonMessage[entry.first] = strProperty->GetValue();
+			}
+			else if (propertyType == PropertyType::NUMBER)
+			{
+				auto numProperty = dynamic_cast<NumberProperty*>(property);
+				if (!numProperty)
+				{
+					continue;
+				}
+				jsonMessage[entry.first] = numProperty->GetValue();
+			}
+			else if (propertyType == PropertyType::BOOLEAN)
+			{
+				auto boolProperty = dynamic_cast<BooleanProperty*>(property);
+				if (!boolProperty)
+				{
+					continue;
+				}
+				jsonMessage[entry.first] = boolProperty->GetValue();
+			}
+		}
+
+		return nlohmann::to_string(jsonMessage);
 	}
 
 private:
