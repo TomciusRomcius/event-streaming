@@ -47,7 +47,7 @@ public:
 		else
 		{
 			LOG_DEBUG("Pushing host to m_Subscribers list");
-			it->second.push_back(socket);
+			it->second.insert(socket);
 		}
 	}
 
@@ -136,5 +136,5 @@ private:
 	const TcpSocketMessenger& m_TcpSocketMessenger;
 	std::vector<Event> m_Events;
 	std::unordered_map<std::string, std::unique_ptr<EventType>> m_EventTypes;
-	std::unordered_map<std::string, std::vector<unsigned int>> m_Subscribers;
+	std::unordered_map<std::string, std::set<unsigned int>> m_Subscribers;
 };
