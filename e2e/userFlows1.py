@@ -32,6 +32,13 @@ subscribeToEventTypeReq = """
 }
 """
 
+unsubscribeFromEventTypeReq = """
+{
+    "type": "unsubscribe-from-event-type",
+    "eventType": "test-event"
+}
+"""
+
 produceEventReq = """
 {
     "type": "produce-event",
@@ -69,3 +76,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     bMsg = s.recv(messageBytes)
     msg = bMsg.decode()
     print(msg)
+    s.send(generate_tcp_message(unsubscribeFromEventTypeReq))

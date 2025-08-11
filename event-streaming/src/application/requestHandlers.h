@@ -124,3 +124,24 @@ public:
 private:
     EventSystem& m_EventSystem;
 };
+
+class UnsubscribeFromEventHandler : public ITcpRequestHandler
+{
+public:
+    UnsubscribeFromEventHandler(EventSystem& eventSystem)
+        : m_EventSystem(eventSystem)
+    { }
+
+    void Execute(TcpRequest request) override
+    {
+        LOG_TRACE("Enetered UnsubscribeFromEventHandler::Execute");
+        // TODO: move to_string to macro as even when log level is higher than debug
+        // json serialization still happens
+        nlohmann::json json = request.body;
+        LOG_DEBUG("UnsubscribeFromEventHandler request json: '{}'", nlohmann::to_string(json));
+        std::string eventTypeName = json["eventType"];
+        m_EventSystem.Unsubscribe(eventTypeName, request.socket);
+    }
+private:
+    EventSystem& m_EventSystem;
+};

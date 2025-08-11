@@ -51,9 +51,31 @@ public:
 		}
 	}
 
-	void Unsubscribe(const EventType& eventType, unsigned int socket)
+	void Unsubscribe(const std::string& eventType, unsigned int socket)
 	{
 		LOG_TRACE("Entered EventSystem::Unsubscribe");
+		auto subsIt = m_Subscribers.find(eventType);
+		if (subsIt == m_Subscribers.end())
+		{
+			LOG_ERROR(
+				"Failed unsubscribe socket {} from event type '{}': event type does not",
+				socket,
+				eventType
+			);
+			return;
+		}
+		if (!subsIt->second.contains(socket))
+		{
+			LOG_WARN(
+				"Socket unsubscribe failed: Socket {} is not subscribed to '{}' event type",
+				socket,
+				eventType
+			);
+			return;
+		}
+
+		subsIt->second.erase(socket);
+		LOG_DEBUG("Unsubscribed socket {} from event type '{}'", socket, eventType);
 	}
 
 	void ProduceEvent(Event&& event)
@@ -131,7 +153,7 @@ private:
 	}
 
 private:
-	// event type name -> ipAddresses
+	// event type name t-> ipAddresses
 	// TODO: linked list may be better for performance on higher loads
 	const TcpSocketMessenger& m_TcpSocketMessenger;
 	std::vector<Event> m_Events;

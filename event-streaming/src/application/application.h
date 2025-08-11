@@ -53,6 +53,11 @@ public:
 			"subscribe-to-event-type",
 			std::make_unique<SubscribeToEventHandler>(*m_EventSystem)
 		);
+
+		m_TcpRequestHandlerService->RegisterStrategy(
+			"unsubscribe-from-event-type",
+			std::make_unique<UnsubscribeFromEventHandler>(*m_EventSystem)
+		);
 	}
 
 	void Start()
