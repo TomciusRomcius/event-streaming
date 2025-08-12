@@ -58,6 +58,7 @@ void TcpSocketMessenger::Update()
 
 bool TcpSocketMessenger::QueueMessage(const std::vector<unsigned int>& targetSockets, std::string message)
 {
+	LOG_TRACE("Entered TcpSocketMessenger::QueueMessage");
 	for (auto socket : targetSockets)
 	{
 		m_MessageQueue.emplace(std::tuple<int, std::string>(socket, message));
