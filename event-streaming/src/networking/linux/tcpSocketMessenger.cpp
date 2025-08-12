@@ -5,6 +5,8 @@
 #include <sys/socket.h>
 #include "../../application/utils.h"
 
+constexpr int BATCH_SIZE = 10;
+
 TcpSocketMessenger::TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool)
 	: m_TcpConnectionPool(tcpConnectionPool)
 {
@@ -28,29 +30,37 @@ void* FormTcpMessage(const std::string& message, uint32_t* bufferSize)
 	return buffer;
 }
 
-bool TcpSocketMessenger::SendRequest(const std::vector<unsigned int>& targetSockets, std::string message) const
+void TcpSocketMessenger::Update()
 {
-	LOG_TRACE("Entered TcpSocketMessenger::SendRequest");
-	LOG_DEBUG("Sending message '{}' to {} sockets", message, targetSockets.size());
-
-	uint32_t bufferSize;
-	void* messageBuffer = FormTcpMessage(message, &bufferSize);
-
-	for (auto socket : targetSockets)
+	for (int iteration = 0; iteration < BATCH_SIZE; iteration++)
 	{
+		if (m_MessageQueue.empty())
+			return;
+		std::tuple<int, std::string> message = m_MessageQueue.front();
+		std::string sMessage = get<1>(message);
+		int socket = get<0>(message);
+		LOG_DEBUG("Sending a new message to socket {}", socket);
+		uint32_t bufferSize;
+		void* messageBuffer = FormTcpMessage(sMessage, &bufferSize);
 		if (!m_TcpConnectionPool.HasClientSocket(socket))
 		{
 			LOG_ERROR("Send request failed: socket {} does not exist", socket);
-			return false;
 		}
 
 		if (send(socket, messageBuffer, bufferSize, 0) == -1)
 		{
 			LOG_ERROR("Send request failed: '{}'", std::strerror(errno));
-			return false;
 		}
-	}
 
-	free(messageBuffer);
-	return true;
+		m_MessageQueue.pop();
+	}
+}
+
+bool TcpSocketMessenger::QueueMessage(const std::vector<unsigned int>& targetSockets, std::string message)
+{
+	for (auto socket : targetSockets)
+	{
+		m_MessageQueue.emplace(std::tuple<int, std::string>(socket, message));
+	}
+	return true;	
 }

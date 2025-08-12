@@ -108,7 +108,7 @@ private:
 		{
 			LOG_DEBUG("Sending event '{}' to socket '{}'", event.GetName(), socket);
 			std::string formedMessage = FormMessage(event);
-			m_TcpSocketMessenger.SendRequest({socket}, formedMessage);
+			m_TcpSocketMessenger.QueueMessage({socket}, formedMessage);
 		}
 	}
 
@@ -155,7 +155,7 @@ private:
 private:
 	// event type name t-> ipAddresses
 	// TODO: linked list may be better for performance on higher loads
-	const TcpSocketMessenger& m_TcpSocketMessenger;
+	TcpSocketMessenger& m_TcpSocketMessenger;
 	std::vector<Event> m_Events;
 	std::unordered_map<std::string, std::unique_ptr<EventType>> m_EventTypes;
 	std::unordered_map<std::string, std::set<unsigned int>> m_Subscribers;

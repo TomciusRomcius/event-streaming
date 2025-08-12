@@ -70,6 +70,7 @@ public:
 			{ 
 				HandleTcpMessage(message, socket); 
 			});
+			m_TcpSocketMessenger->Update();
 		}
 	}
 
