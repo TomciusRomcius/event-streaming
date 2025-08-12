@@ -13,7 +13,7 @@ TcpSocketMessenger::TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool)
 }
 
 // Used for generating TCP message buffer. Returns a pointer to allocated buffer
-void* FormTcpMessage(const std::string& message, uint32_t* bufferSize)
+std::unique_ptr<void, void(*)(void*)>&& FormTcpMessage(const std::string& message, uint32_t* bufferSize)
 {
 	LOG_TRACE("Entered FormTcpMessage");
 	uint32_t messageSize = message.length();
@@ -27,7 +27,7 @@ void* FormTcpMessage(const std::string& message, uint32_t* bufferSize)
 	memcpy(messagePointer, message.c_str(), messageSize);
 	LOG_DEBUG("TCP message size: {}", *bufferSize);
 	LOG_DEBUG("User message size: {}", messageSize);
-	return buffer;
+	return std::unique_ptr<void, void(*)(void*)>(buffer, free);
 }
 
 void TcpSocketMessenger::Update()
@@ -41,13 +41,13 @@ void TcpSocketMessenger::Update()
 		int socket = get<0>(message);
 		LOG_DEBUG("Sending a new message to socket {}", socket);
 		uint32_t bufferSize;
-		void* messageBuffer = FormTcpMessage(sMessage, &bufferSize);
+		std::unique_ptr<void, void(*)(void*)> messageBuffer = FormTcpMessage(sMessage, &bufferSize);
 		if (!m_TcpConnectionPool.HasClientSocket(socket))
 		{
 			LOG_ERROR("Send request failed: socket {} does not exist", socket);
 		}
 
-		if (send(socket, messageBuffer, bufferSize, 0) == -1)
+		if (send(socket, messageBuffer.get(), bufferSize, 0) == -1)
 		{
 			LOG_ERROR("Send request failed: '{}'", std::strerror(errno));
 		}
