@@ -12,7 +12,7 @@ enum class PropertyType
 class IProperty
 {
 public:
-    virtual PropertyType GetPropertyType() = 0;
+    virtual inline PropertyType GetPropertyType() = 0;
     virtual ~IProperty() = default;
 };
 
@@ -23,7 +23,7 @@ public:
         : m_Value(std::move(value))
     { }
 
-    PropertyType GetPropertyType() override
+    inline PropertyType GetPropertyType() override
     {
         return PropertyType::STRING;
     }
@@ -43,7 +43,7 @@ public:
         : m_Value(value)
     { }
 
-    PropertyType GetPropertyType() override
+    inline PropertyType GetPropertyType() override
     {
         return PropertyType::NUMBER;
     }
@@ -63,7 +63,7 @@ public:
         : m_Value(value)
     { }
 
-    PropertyType GetPropertyType() override
+    inline PropertyType GetPropertyType() override
     {
         return PropertyType::BOOLEAN;
     }
