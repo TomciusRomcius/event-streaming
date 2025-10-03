@@ -1,12 +1,8 @@
-#ifdef __linux
-
-#include "tcpSocketConnectionManager.h"
-#include "../../application/logging.h"
-#include <asm-generic/socket.h>
 #include <cstring>
 #include <iostream>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <winsock2.h>
+#include "tcpSocketConnectionManager.h"
+#include "../../application/logging.h"
 
 TcpSocketConnectionManager::TcpSocketConnectionManager(TcpConnectionPool& tcpConnectionPool, int serverPort)
 	: m_TcpConnectionPool(tcpConnectionPool), m_ServerPort(serverPort)
@@ -16,20 +12,31 @@ TcpSocketConnectionManager::TcpSocketConnectionManager(TcpConnectionPool& tcpCon
 TcpSocketConnectionManager::~TcpSocketConnectionManager()
 {
 	std::cout << "Closing server socket." << '\n';
-	close(m_ServerSocket);
+	closesocket(m_ServerSocket);
 }
 
 void TcpSocketConnectionManager::InitializeServerSocket()
 {
+	LOG_INFO("Initializing WSA");
+	WORD version = MAKEWORD(2, 2);
+	WSADATA wsaData;
+	if (WSAStartup(version, &wsaData) == -1)
+	{
+		int error = WSAGetLastError();
+		LOG_ERROR("Failed to initialize WSA: '{}'", error);
+		throw std::runtime_error("Failed to initialize WSA");
+	}
 	LOG_INFO("Initializing server socket on port: {}", m_ServerPort);
 	m_ServerSocket = socket(AF_INET, SOCK_STREAM, 0);
-	if (m_ServerSocket == -1)
+	if (m_ServerSocket == SOCKET_ERROR)
 	{
-		LOG_ERROR("Failed to setup server socket: '{}'", std::strerror(errno));
+		int error = WSAGetLastError();
+		LOG_ERROR("Failed to setup server socket: '{}'", error);
 		throw std::runtime_error("Failed to create server socket");
 	}
-	int opt = 1;
-	if (setsockopt(m_ServerSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+
+	BOOL opt = TRUE;
+	if (setsockopt(m_ServerSocket, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char*)&opt, sizeof(opt)) == SOCKET_ERROR)
 	{
 		LOG_ERROR("Failed to setup server socket options: '{}'", std::strerror(errno));
 		throw std::runtime_error("Failed to set socket options");
@@ -76,7 +83,7 @@ void TcpSocketConnectionManager::TryAcceptIncomingConnection()
 
 	LOG_DEBUG("Incoming tcp connection");
 	sockaddr_in clientAddr;
-	socklen_t clientAddrLen = sizeof(clientAddr);
+	int clientAddrLen = sizeof(clientAddr);
 	int clientSocket = accept(m_ServerSocket, (sockaddr*)&clientAddr, &clientAddrLen);
 	if (clientSocket == -1)
 	{
@@ -91,8 +98,6 @@ void TcpSocketConnectionManager::TerminateConnection(unsigned int socket)
 {
 	SPDLOG_TRACE("Entered TcpSocketConnectionManager::TerminateConnection");
 	SPDLOG_DEBUG("Terminating connection for socket {}", socket);
-	close(socket);
+	closesocket(socket);
 	m_TcpConnectionPool.RemoveClientSocket(socket);
 }
-
-#endif

@@ -1,11 +1,10 @@
 #include <memory>
 #include <string>
-#include <unistd.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include "../networking/linux/tcpSocketConnectionManager.h"
-#include "../networking/linux/tcpSocketMessenger.h"
+#include "../networking/shared/tcpSocketMessenger.h"
 #include "../networking/linux/tcpMessageReceiver.h"
 #include "../networking/shared/tcpRequest.h"
 #include "../eventSystem/eventSystem.h"

@@ -1,10 +1,7 @@
-#ifdef __linux__
-
-#include "tcpSocketMessenger.h"
-#include "../../application/logging.h"
-#include <iostream>
 #include <stdexcept>
-#include <sys/socket.h>
+#include <winsock2.h>
+#include "../shared/tcpSocketMessenger.h"
+#include "../../application/logging.h"
 #include "../../application/utils.h"
 
 constexpr int BATCH_SIZE = 10;
@@ -15,7 +12,7 @@ TcpSocketMessenger::TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool)
 }
 
 // Used for generating TCP message buffer. Returns a pointer to allocated buffer
-std::unique_ptr<void, void (*)(void*)> FormTcpMessage(const std::string& message, uint32_t* bufferSize)
+std::unique_ptr<void, void(*)(void*)> FormTcpMessage(const std::string& message, uint32_t* bufferSize)
 {
 	LOG_TRACE("Entered FormTcpMessage");
 	uint32_t messageSize = message.length();
@@ -25,11 +22,11 @@ std::unique_ptr<void, void (*)(void*)> FormTcpMessage(const std::string& message
 	void* buffer = malloc(*bufferSize);
 	uint32_t* sizePointer = reinterpret_cast<uint32_t*>(buffer);
 	*sizePointer = HostToBigEndian32(messageSize);
-	void* messagePointer = reinterpret_cast<void*>(sizePointer + 1);
-	memcpy(messagePointer, message.c_str(), messageSize);
+	void* messagePointer = sizePointer + 1;
+	memcpy(messagePointer, message.data(), messageSize);
 	LOG_DEBUG("TCP message size: {}", *bufferSize);
 	LOG_DEBUG("User message size: {}", messageSize);
-	return std::unique_ptr<void, void (*)(void*)>(buffer, free);
+	return std::unique_ptr<void, void(*)(void*)>(buffer, free);
 }
 
 void TcpSocketMessenger::Update()
@@ -49,7 +46,7 @@ void TcpSocketMessenger::Update()
 			LOG_ERROR("Send request failed: socket {} does not exist", socket);
 		}
 
-		if (send(socket, messageBuffer.get(), bufferSize, 0) == -1)
+		if (send(socket, (const char*)messageBuffer.get(), bufferSize, 0) == -1)
 		{
 			LOG_ERROR("Send request failed: '{}'", std::strerror(errno));
 		}
@@ -58,7 +55,7 @@ void TcpSocketMessenger::Update()
 	}
 }
 
-bool TcpSocketMessenger::QueueMessage(const std::vector<unsigned int>& targetSockets, std::string message)
+bool TcpSocketMessenger::QueueMessage(const std::vector<SocketType>& targetSockets, std::string message)
 {
 	LOG_TRACE("Entered TcpSocketMessenger::QueueMessage");
 	for (auto socket : targetSockets)
@@ -67,5 +64,3 @@ bool TcpSocketMessenger::QueueMessage(const std::vector<unsigned int>& targetSoc
 	}
 	return true;
 }
-
-#endif

@@ -1,8 +1,11 @@
-#ifdef __linux
-
 #pragma once
 #include "../shared/tcpConnectionPool.h"
-#include <netinet/in.h>
+#ifdef __linux__
+#include <sys/socket.h>
+#endif
+#ifdef WIN32
+#include <winsock.h>
+#endif
 
 class TcpSocketConnectionManager
 {
@@ -18,5 +21,3 @@ private:
 	unsigned int m_ServerSocket;
 	sockaddr_in m_ServerAddress;
 };
-
-#endif

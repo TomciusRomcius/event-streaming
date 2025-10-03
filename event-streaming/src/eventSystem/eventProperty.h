@@ -6,72 +6,78 @@ enum class PropertyType
 {
 	STRING = 0,
 	NUMBER,
-    BOOLEAN
+	BOOLEAN
 };
 
 class IProperty
 {
 public:
-    virtual inline PropertyType GetPropertyType() = 0;
-    virtual ~IProperty() = default;
+	virtual PropertyType GetPropertyType() = 0;
+	virtual ~IProperty() = default;
 };
 
 class StringProperty : public IProperty
 {
 public:
-    explicit StringProperty(std::string&& value)
-        : m_Value(std::move(value))
-    { }
+	explicit StringProperty(std::string &&value)
+		: m_Value(std::move(value))
+	{
+	}
 
-    inline PropertyType GetPropertyType() override
-    {
-        return PropertyType::STRING;
-    }
+	inline PropertyType GetPropertyType() override
+	{
+		return PropertyType::STRING;
+	}
 
-    inline std::string GetValue() const
-    {
-        return m_Value;
-    }
+	inline std::string GetValue() const
+	{
+		return m_Value;
+	}
+
 private:
-    std::string m_Value;
+	std::string m_Value;
 };
 
 class NumberProperty : public IProperty
 {
 public:
-    explicit NumberProperty(double value)
-        : m_Value(value)
-    { }
+	explicit NumberProperty(double value)
+		: m_Value(value)
+	{
+	}
 
-    inline PropertyType GetPropertyType() override
-    {
-        return PropertyType::NUMBER;
-    }
+	inline PropertyType GetPropertyType() override
+	{
+		return PropertyType::NUMBER;
+	}
 
-    inline double GetValue() const
-    {
-        return m_Value;
-    }
+	inline double GetValue() const
+	{
+		return m_Value;
+	}
+
 private:
-    double m_Value;
+	double m_Value;
 };
 
 class BooleanProperty : public IProperty
 {
 public:
-    explicit BooleanProperty(bool value)
-        : m_Value(value)
-    { }
+	explicit BooleanProperty(bool value)
+		: m_Value(value)
+	{
+	}
 
-    inline PropertyType GetPropertyType() override
-    {
-        return PropertyType::BOOLEAN;
-    }
+	inline PropertyType GetPropertyType() override
+	{
+		return PropertyType::BOOLEAN;
+	}
 
-    inline bool GetValue() const
-    {
-        return m_Value;
-    }
+	inline bool GetValue() const
+	{
+		return m_Value;
+	}
+
 private:
-    bool m_Value;
+	bool m_Value;
 };

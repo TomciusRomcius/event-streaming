@@ -1,5 +1,3 @@
-#ifdef __linux__
-
 #pragma once
 #include "../shared/tcpConnectionPool.h"
 #include <functional>
@@ -19,7 +17,7 @@ struct TcpSocketContext
 	TcpSocketContext(unsigned int so, TcpSocketState st)
 		: socket(so), state(st) {
 	}
-	unsigned int socket;
+	SOCKET socket;
 	TcpSocketState state;
 	uint32_t bodySize = 0;
 };
@@ -33,7 +31,5 @@ public:
 private:
 	TcpSocketConnectionManager& m_TcpSocketConnectionManager;
 	TcpConnectionPool& m_TcpConnectionPool;
-	std::unordered_map<unsigned int, uint32_t> m_ProcessingSocketsToMsgSize;
+	std::unordered_map<SOCKET, uint32_t> m_ProcessingSocketsToMsgSize;
 };
-
-#endif

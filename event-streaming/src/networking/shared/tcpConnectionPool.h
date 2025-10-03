@@ -2,43 +2,44 @@
 #include <set>
 #include "../../application/logging.h"
 
+#ifdef WIN32
+typedef SOCKET SocketType;
+#endif
+#ifdef __linux__
+typedef int SocketType;
+#endif
+
 struct TcpConnectionPool
 {
 public:
-	inline void AddClientSocket(unsigned int socket)
+	inline void AddClientSocket(SocketType socket)
 	{
 		LOG_DEBUG("Adding socket '{}' to the connection pool", socket);
-		clientSockets.insert(socket);
+		m_ClientSockets.insert(socket);
 	}
 
-	inline void RemoveClientSocket(unsigned int socket)
+	inline void RemoveClientSocket(SocketType socket)
 	{
 		LOG_DEBUG("Removing socket '{}' from the connection pool", socket);
-		clientSockets.erase(socket);
+		m_ClientSockets.erase(socket);
 	}
 
-	inline bool HasClientSocket(unsigned int socket) const
+	inline bool HasClientSocket(SocketType socket) const
 	{
-		return clientSockets.find(socket) != clientSockets.end();
+		return m_ClientSockets.find(socket) != m_ClientSockets.end();
 	}
 
 	inline int GetHighestSocketDescriptor() const
 	{
-		if (clientSockets.empty())
+		if (m_ClientSockets.empty())
 			return -1;
 
-		return *clientSockets.rbegin(); // Return the largest socket descriptor
+		return *m_ClientSockets.rbegin(); // Return the largest socket descriptor
 	}
 
-	auto begin() const
-	{
-		return clientSockets.begin();
-	}
+	inline bool Empty() const { return m_ClientSockets.empty(); }
 
-	auto end() const
-	{
-		return clientSockets.end();
-	}
+	inline std::set<SocketType> GetClientSockets() { return m_ClientSockets; }
 private:
-	std::set<unsigned int> clientSockets;
+	std::set<SocketType> m_ClientSockets;
 };

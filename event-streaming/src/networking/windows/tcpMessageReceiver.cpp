@@ -1,13 +1,8 @@
-#ifdef __linux__
-
-#include "tcpMessageReceiver.h"
-#include <cfloat>
 #include <functional>
 #include <iostream>
-#include <sys/select.h>
-#include <sys/socket.h>
+#include <winsock2.h>
+#include "tcpMessageReceiver.h"
 #include "../../application/utils.h"
-#include <sys/ioctl.h>
 
 TcpMessageReceiver::TcpMessageReceiver(
 	TcpSocketConnectionManager& tcpSocketConnectionManager,
@@ -18,39 +13,40 @@ TcpMessageReceiver::TcpMessageReceiver(
 
 void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler)
 {
-	fd_set socketFdSet;
+	std::set<SOCKET> clientSockets = m_TcpConnectionPool.GetClientSockets();
+	if (clientSockets.empty())
+	{
+		return;
+	}
+
+	FD_SET socketFdSet;
 	FD_ZERO(&socketFdSet);
 
-	int maxFd = -1;
-
 	// Add all sockets to the set
-	for (const auto& clientSocket : m_TcpConnectionPool)
+	for (const auto& clientSocket : m_TcpConnectionPool.GetClientSockets())
 	{
 		FD_SET(clientSocket, &socketFdSet);
-		if ((int)clientSocket > maxFd)
-		{
-			maxFd = clientSocket;
-		}
 	}
 
 	timeval timeout;
 	timeout.tv_sec = 0;
-	timeout.tv_usec = 10000;
-	int selectResult = select(maxFd + 1, &socketFdSet, nullptr, nullptr, &timeout);
+	timeout.tv_usec = 1000;
+	int selectResult = select(0, &socketFdSet, nullptr, nullptr, &timeout);
 
 	if (selectResult == 0)
 		return;
 
-	if (selectResult == -1)
+	if (selectResult == SOCKET_ERROR)
 	{
+		int error = WSAGetLastError();
 		LOG_ERROR(
 			"Failed to determine status of sockets: select() failed'{}'",
-			std::strerror(errno)
+			error
 		);
 		return;
 	}
 
-	for (auto& clientSocket : m_TcpConnectionPool)
+	for (auto& clientSocket : clientSockets)
 	{
 		if (!FD_ISSET(clientSocket, &socketFdSet))
 			continue;
@@ -59,8 +55,8 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 		if (m_ProcessingSocketsToMsgSize.contains(clientSocket))
 		{
 			int bufSize = m_ProcessingSocketsToMsgSize.at(clientSocket);
-			void* buffer = malloc(bufSize);
-			ssize_t receivedBytes = recv(clientSocket, buffer, bufSize, 0);
+			char* buffer = (char*)malloc(bufSize);
+			int receivedBytes = recv(clientSocket, buffer, bufSize, 0);
 			if (receivedBytes == 0) // Connection closed
 			{
 				m_TcpConnectionPool.RemoveClientSocket(clientSocket);
@@ -94,7 +90,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 		{
 			LOG_DEBUG("Reading request body size");
 			int bufSize = 4;
-			void* buffer = malloc(bufSize);
+			char* buffer = (char*)malloc(bufSize);
 			if (recv(clientSocket, buffer, bufSize, 0) == 0)
 			{
 				m_TcpConnectionPool.RemoveClientSocket(clientSocket);
@@ -108,5 +104,3 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 		}
 	}
 }
-
-#endif

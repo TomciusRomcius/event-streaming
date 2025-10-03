@@ -1,19 +1,14 @@
-#ifdef __linux__
-    #include <arpa/inet.h>
-#endif
-#include <string>
-#include <cstdint>
 #include <nlohmann/json.hpp>
 #include "logging.h"
 
 uint32_t HostToBigEndian32(uint32_t number)
 {
-    return htonl(number);   
+	return htonl(number);
 }
 
 uint32_t BigEndianToHost32(uint32_t number)
 {
-    return ntohl(number);
+	return ntohl(number);
 }
 
 std::string GetTcpRequestType(nlohmann::json json)
@@ -28,8 +23,8 @@ std::string GetTcpRequestType(nlohmann::json json)
 	if (!json["type"].is_string())
 	{
 		LOG_ERROR("Failed to get TCP request type");
-		return "err";	
+		return "err";
 	}
-	
+
 	return json["type"];
 }

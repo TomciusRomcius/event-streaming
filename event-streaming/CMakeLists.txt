@@ -7,6 +7,7 @@
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
 add_executable (event-streaming  ${SOURCES})
+target_precompile_headers (event-streaming PRIVATE src/pch.h)
 target_compile_definitions(event-streaming PRIVATE SPDLOG_ACTIVE_LEVEL=0)
 
 include(FetchContent)
@@ -17,9 +18,8 @@ FetchContent_MakeAvailable(json)
 target_link_libraries(event-streaming PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(event-streaming PRIVATE spdlog)
 
-
 if (WIN32)
-  target_link_libraries(event-streaming ws2_32.lib)
+  target_link_libraries(event-streaming PRIVATE ws2_32.lib)
 endif()
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET event-streaming PROPERTY CXX_STANDARD 20)

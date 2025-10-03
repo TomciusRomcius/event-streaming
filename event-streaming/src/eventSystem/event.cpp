@@ -21,3 +21,8 @@ bool EventType::ValidateEventValues(const std::unordered_map<std::string, std::u
 
 Event::Event(std::string eventType, std::unordered_map<std::string, std::unique_ptr<IProperty>>&& values)
 		: m_EventType(eventType), m_Values(std::move(values)) { }
+
+Event::Event(Event &&other)
+    : m_EventType(std::move(other.m_EventType)), m_Values(std::move(other.m_Values))
+{
+}
