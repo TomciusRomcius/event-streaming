@@ -6,27 +6,26 @@
 
 constexpr int BATCH_SIZE = 10;
 
-TcpSocketMessenger::TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool)
-	: m_TcpConnectionPool(tcpConnectionPool)
+TcpSocketMessenger::TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool)
+	: m_TcpConnectionPool(tcpConnectionPool), m_MemoryPool(memoryPool)
 {
 }
 
 // Used for generating TCP message buffer. Returns a pointer to allocated buffer
-std::unique_ptr<void, void(*)(void*)> FormTcpMessage(const std::string& message, uint32_t* bufferSize)
+void* TcpSocketMessenger::FormTcpMessage(const std::string& message, uint32_t* bufferSize)
 {
 	LOG_TRACE("Entered FormTcpMessage");
 	uint32_t messageSize = message.length();
 	// 4 additional bytes are allocated for a uint32 to specify message size and establish
 	// TCP message boundaries
 	*bufferSize = 4 + messageSize;
-	void* buffer = malloc(*bufferSize);
-	uint32_t* sizePointer = reinterpret_cast<uint32_t*>(buffer);
+	void* buffer = m_MemoryPool.GetMemoryChunk(*bufferSize);
+	uint32_t* sizePointer = static_cast<uint32_t*>(buffer);
 	*sizePointer = HostToBigEndian32(messageSize);
 	void* messagePointer = sizePointer + 1;
 	memcpy(messagePointer, message.data(), messageSize);
 	LOG_DEBUG("TCP message size: {}", *bufferSize);
 	LOG_DEBUG("User message size: {}", messageSize);
-	return std::unique_ptr<void, void(*)(void*)>(buffer, free);
 }
 
 void TcpSocketMessenger::Update()
