@@ -1,3 +1,5 @@
+#ifdef WIN32
+
 #include <cstring>
 #include <iostream>
 #include <winsock2.h>
@@ -101,3 +103,4 @@ void TcpSocketConnectionManager::TerminateConnection(unsigned int socket)
 	closesocket(socket);
 	m_TcpConnectionPool.RemoveClientSocket(socket);
 }
+#endif

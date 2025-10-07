@@ -1,3 +1,5 @@
+#ifdef WIN32
+
 #include <stdexcept>
 #include <winsock2.h>
 #include "../shared/tcpSocketMessenger.h"
@@ -63,3 +65,4 @@ bool TcpSocketMessenger::QueueMessage(const std::vector<SocketType>& targetSocke
 	}
 	return true;
 }
+#endif

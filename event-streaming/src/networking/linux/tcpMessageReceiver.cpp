@@ -24,7 +24,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 	int maxFd = -1;
 
 	// Add all sockets to the set
-	for (const auto& clientSocket : m_TcpConnectionPool)
+	for (const auto& clientSocket : m_TcpConnectionPool.GetClientSockets())
 	{
 		FD_SET(clientSocket, &socketFdSet);
 		if ((int)clientSocket > maxFd)
@@ -50,7 +50,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 		return;
 	}
 
-	for (auto& clientSocket : m_TcpConnectionPool)
+	for (auto& clientSocket : m_TcpConnectionPool.GetClientSockets())
 	{
 		if (!FD_ISSET(clientSocket, &socketFdSet))
 			continue;

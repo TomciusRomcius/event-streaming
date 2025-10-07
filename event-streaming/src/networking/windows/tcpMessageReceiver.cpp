@@ -1,3 +1,5 @@
+#ifdef WIN32
+
 #include <functional>
 #include <iostream>
 #include <winsock2.h>
@@ -104,3 +106,5 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 		}
 	}
 }
+
+#endif

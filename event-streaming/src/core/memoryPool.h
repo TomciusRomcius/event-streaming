@@ -1,7 +1,5 @@
 #pragma once
-#include <queue>
 #include <mutex>
-#include <vector>
 #include <set>
 
 #define MAX_CHUNK_SIZE 4098
@@ -39,8 +37,11 @@ public:
 	MemoryChunkUser(MemoryChunk& memoryChunk)
 		: m_MemoryChunk(memoryChunk)
 	{
-		LOG_WARN("Trying to create a MemoryChunkUser for a memory chunk that is in use!");
-		assert(memoryChunk.m_IsInUse == false, "Trying to create a MemoryChunkUser for a memory chunk that is in use!");
+		LOG_DEBUG("Created MemoryChunkUser with memory chunk size: '{}'", memoryChunk.GetSize());
+		if (memoryChunk.m_IsInUse)
+		{
+			LOG_WARN("Trying to create a MemoryChunkUser for a memory chunk that is in use!");
+		}
 		m_MemoryChunk.m_IsInUse = true;
 	}
 
@@ -70,12 +71,14 @@ public:
 
 	}
 
-	MemoryChunkUser GetMemoryChunk(int16_t chunkSize)
+	std::optional<MemoryChunkUser> GetMemoryChunk(int16_t chunkSize)
 	{
+		LOG_TRACE("Entered GetMemoryChunk");
+		LOG_DEBUG("Requesting memory chunk of size {}", chunkSize);
 		if (chunkSize > MAX_CHUNK_SIZE)
 		{
 			LOG_WARN("Trying to get a memory chunk with a size, that exceeds MAX_CHUNK_SIZE!");
-			return nullptr;
+			return std::nullopt;
 		}
 
 		std::lock_guard<std::mutex> lock(m_Mutex);
@@ -85,11 +88,14 @@ public:
 			if (it->GetSize() >= chunkSize)
 			{
 				// Its okay to remove const cast, since size won't be changed. TODO: should find a better way though
-				return &const_cast<MemoryChunk&>(*it);
+				auto& memoryChunk = const_cast<MemoryChunk&>(*it);
+				return MemoryChunkUser(memoryChunk);
 			}
 		}
 
 		// No memory chunk with correct size
+
+		LOG_DEBUG("Creating memory chunk with size: {}", chunkSize);
 		m_MemoryChunks.emplace(chunkSize);
 		if (m_MemoryChunks.size() > m_MaxPoolCount)
 		{
@@ -98,7 +104,8 @@ public:
 		}
 
 		// Its okay to remove const cast, since size won't be changed. TODO: should find a better way though
-		return &const_cast<MemoryChunk&>(*m_MemoryChunks.rbegin());
+		auto& memoryChunk = const_cast<MemoryChunk&>(*m_MemoryChunks.rbegin());
+		return MemoryChunkUser(memoryChunk);
 	}
 private:
 	MemoryChunkSet m_MemoryChunks;

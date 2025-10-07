@@ -1,8 +1,7 @@
 #pragma once
 
-#ifdef __linux
+#ifdef __linux__
 #include "../networking/linux/tcpSocketConnectionManager.h"
-#include "../networking/linux/tcpSocketMessenger.h"
 #include "../networking/linux/tcpMessageReceiver.h"
 #endif
 
