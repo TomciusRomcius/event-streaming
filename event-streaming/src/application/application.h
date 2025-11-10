@@ -25,6 +25,7 @@ public:
 	void Start();
 private:
 	void HandleTcpMessage(const std::string& message, unsigned int socket);
+	std::unique_ptr<InternalEventBus> m_InternalEventBus;
 	std::unique_ptr<TcpConnectionPool> m_TcpConnectionPool;
 	std::unique_ptr<TcpSocketConnectionManager> m_TcpConnectionManager;
 	std::unique_ptr<TcpSocketMessenger> m_TcpSocketMessenger;

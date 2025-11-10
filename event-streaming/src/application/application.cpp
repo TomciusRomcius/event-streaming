@@ -17,13 +17,14 @@ Application::Application()
 	spdlog::set_level(spdlog::level::trace);
 	SPDLOG_TRACE("Entered Application::Application");
 
+	m_InternalEventBus = std::make_unique<InternalEventBus>();
+
 	int maxMemoryChunkCount = 10;
 	m_MemoryPool = std::make_unique<MemoryPool>(maxMemoryChunkCount);
+	m_TcpConnectionPool = std::make_unique<TcpConnectionPool>(TcpConnectionPool(*m_InternalEventBus));
 
 	unsigned int serverPort = 9000;
-	m_TcpConnectionPool = std::make_unique<TcpConnectionPool>();
-
-	m_TcpConnectionManager = std::make_unique<TcpSocketConnectionManager>(*m_TcpConnectionPool, serverPort);
+	m_TcpConnectionManager = std::make_unique<TcpSocketConnectionManager>(TcpSocketConnectionManager(*m_InternalEventBus, *m_TcpConnectionPool, serverPort));
 	m_TcpConnectionManager->InitializeServerSocket();
 
 	m_TcpSocketMessenger = std::make_unique<TcpSocketMessenger>(*m_TcpConnectionPool, *m_MemoryPool);

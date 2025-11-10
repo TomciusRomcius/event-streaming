@@ -5,9 +5,12 @@
 #include <winsock2.h>
 #include "tcpSocketConnectionManager.h"
 #include "../../application/logging.h"
+#include "../../core/internalEventTypes.h"
 
-TcpSocketConnectionManager::TcpSocketConnectionManager(TcpConnectionPool& tcpConnectionPool, int serverPort)
-	: m_TcpConnectionPool(tcpConnectionPool), m_ServerPort(serverPort)
+TcpSocketConnectionManager::TcpSocketConnectionManager(InternalEventBus& internalEventBus,
+	TcpConnectionPool& tcpConnectionPool,
+	int serverPort)
+	: m_InternalEventBus(internalEventBus), m_TcpConnectionPool(tcpConnectionPool), m_ServerPort(serverPort)
 {
 }
 
@@ -92,8 +95,9 @@ void TcpSocketConnectionManager::TryAcceptIncomingConnection()
 		LOG_ERROR("An error occured while accepting an incoming TCP connection: {}", std::strerror(errno));
 		return;
 	}
-
+	
 	m_TcpConnectionPool.AddClientSocket(clientSocket);
+	m_InternalEventBus.ProduceEvent(new ClientConnectedEvent(clientSocket));
 }
 
 void TcpSocketConnectionManager::TerminateConnection(unsigned int socket)
@@ -102,5 +106,6 @@ void TcpSocketConnectionManager::TerminateConnection(unsigned int socket)
 	SPDLOG_DEBUG("Terminating connection for socket {}", socket);
 	closesocket(socket);
 	m_TcpConnectionPool.RemoveClientSocket(socket);
+	m_InternalEventBus.ProduceEvent(new ClientDisconnectedEvent(socket));
 }
 #endif

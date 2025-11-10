@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "eventSystem.h"
 
 EventSystem::EventSystem(TcpSocketMessenger& tcpSocketMessenger)
@@ -26,12 +27,27 @@ void EventSystem::Subscribe(std::string& eventType, GroupId groupId, SocketType 
 
 	if (it == m_Groups.end())
 	{
-		m_Groups[eventType] = GroupSocketsContainer();
-		m_Groups.at(eventType).AddSocket(groupId, socket);
+		auto evGroup = EventGroup(groupId);
+		evGroup.Sockets.push_back(socket);
+		m_Groups[eventType] = { std::move(evGroup)};
 	}
 	else
 	{
-		it->second.AddSocket(groupId, socket);
+		auto& groups = it->second;
+		auto groupIt = std::find_if(groups.begin(), groups.end(), [groupId](EventGroup& group)
+			{
+				return group.EventGroupId == groupId;
+			});
+		if (groupIt != groups.end())
+		{
+			groupIt->Sockets.push_back(socket);
+		}
+		else
+		{
+			auto evGroup = EventGroup(groupId);
+			evGroup.Sockets.push_back(socket);
+			groups.push_back(std::move(evGroup));
+		}
 	}
 }
 
@@ -49,19 +65,20 @@ void EventSystem::Unsubscribe(std::string& eventType, GroupId groupId, SocketTyp
 		);
 		return;
 	}
-	if (groupsIt->second.RemoveSocketFromGroup(groupId, socket))
-	{
-		LOG_INFO("Unsubscribed socket {} from event type '{}'", socket, eventType);
-	}
-
-	else
-	{
-		LOG_WARN(
-			"Socket unsubscribe failed: Socket {} is not subscribed to '{}' event type",
-			socket,
-			eventType
-		);
+	
+	auto& groups = groupsIt->second;
+	auto groupIt = std::find_if(groups.begin(), groups.end(), [groupId](EventGroup& group)
+		{
+			return group.EventGroupId == groupId;
+		});
+	if (groupIt == groups.end())
 		return;
+
+	auto& eventGroup = *groupIt;
+	auto socketIt = std::find(eventGroup.Sockets.begin(), eventGroup.Sockets.end(), socket);
+	if (socketIt != eventGroup.Sockets.end())
+	{
+		eventGroup.Sockets.erase(socketIt);
 	}
 }
 
@@ -91,13 +108,16 @@ void EventSystem::Publish(Event& event)
 		throw std::runtime_error("Publish failed: event type has not been registered!");
 	}
 
-	std::vector<SocketType> sockets = it->second.GetSockets();
+	// TODO extract group load balancing logic and implement round robin instead of random
 	std::string formedMessage = FormMessage(event);
-
-	for (unsigned int socket : sockets)
+	std::vector<SocketType> sockets;
+	sockets.reserve(it->second.size());
+	for (auto& group : it->second)
 	{
-		LOG_DEBUG("Sending event '{}' to socket '{}'", event.GetName(), socket);
-		m_TcpSocketMessenger.QueueMessage({ socket }, formedMessage);
+		srand(time(0));
+		SocketType sock = group.Sockets[rand() % group.Sockets.size()];
+		LOG_DEBUG("Sending event '{}' to socket '{}'", event.GetName(), sock);
+		m_TcpSocketMessenger.QueueMessage({ sock }, formedMessage);
 	}
 }
 
@@ -140,3 +160,44 @@ std::string EventSystem::FormMessage(Event& event)
 
 	return nlohmann::to_string(jsonMessage);
 }
+
+void EventSystem::HandleClientDisconnect(IInternalEvent* event)
+{
+	ClientDisconnectedEvent* disconnectedEvent = static_cast<ClientDisconnectedEvent*>(event);
+	auto it = m_SocketToSubscriberInfo.find(disconnectedEvent->Socket);
+	if (it == m_SocketToSubscriberInfo.end())
+	{
+		return;
+	}
+
+	SubscriberInfo& info = it->second;
+	for (auto& [key, value] : info.SubscribedEventTypes)
+	{
+		auto groupIt = m_Groups.find(key);
+		if (groupIt == m_Groups.end())
+			continue;
+
+		for (auto& [eventType, groupIds] : info.SubscribedEventTypes)
+		{
+			auto groupsIt = m_Groups.find(eventType);
+			if (groupsIt == m_Groups.end())
+				break;
+
+			auto& groups = groupsIt->second;
+
+			// TODO: Depending on the amount of groups the algorithm
+			// could be more efficient as we are looping over a non-sorted vector of n groups
+			for (auto groupId : groupIds)
+			{
+				auto targetGroupIt = std::find_if(groups.begin(), groups.end(), [groupId](EventGroup& group)
+				{
+					return group.EventGroupId == groupId;
+				});
+				groupsIt->second.erase(targetGroupIt);
+			}
+		}
+	}
+
+	m_SocketToSubscriberInfo.erase(disconnectedEvent->Socket);
+}
+

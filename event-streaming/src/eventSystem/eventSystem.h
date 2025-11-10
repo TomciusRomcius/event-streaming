@@ -10,6 +10,13 @@
 
 class TcpSocketMessenger;
 
+// Used for clean up on socket disconnect
+struct SubscriberInfo
+{
+	SocketType Socket;
+	std::map<std::string, std::vector<GroupId>> SubscribedEventTypes;
+};
+
 class EventSystem
 {
 public:
@@ -18,13 +25,16 @@ public:
 	void Subscribe(std::string& eventType, GroupId groupId, SocketType socket);
 	void Unsubscribe(std::string& eventType, GroupId groupId, SocketType socket);
 	void ProduceEvent(Event&& event);
+	void HandleClientDisconnect(IInternalEvent* event);
 private:
 	void Publish(Event& event);
 	std::string FormMessage(Event& event);
 private:
-	// event type name t-> ipAddresses
 	TcpSocketMessenger& m_TcpSocketMessenger;
 	std::vector<Event> m_Events;
 	std::unordered_map<std::string, std::unique_ptr<EventType>> m_EventTypes;
-	std::unordered_map<std::string, GroupSocketsContainer> m_Groups;
+	std::unordered_map<std::string, std::vector<EventGroup>> m_Groups;
+	std::map<SocketType, SubscriberInfo> m_SocketToSubscriberInfo;
+
+	// SocketType -> SubscriberInfo(subscribed event types and groups)
 };
