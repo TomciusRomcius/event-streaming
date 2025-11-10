@@ -13,7 +13,7 @@ public:
 	void Update();
 	bool QueueMessage(const std::vector<SocketType>& targetSockets, std::string message);
 private:
-	std::unique_ptr<void, void(*)(void*)> FormTcpMessage(const std::string& message, uint32_t* bufferSize);
+	MemoryChunkUser&& FormTcpMessage(const std::string& message, uint32_t* bufferSize);
 	TcpConnectionPool& m_TcpConnectionPool;
 	MemoryPool& m_MemoryPool;
 	// Holds a tuple(socket, message)

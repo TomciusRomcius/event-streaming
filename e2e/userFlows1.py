@@ -28,14 +28,16 @@ createEventTypeReq = """
 subscribeToEventTypeReq = """
 {
     "type": "subscribe-to-event-type",
-    "eventType": "test-event"
+    "eventType": "test-event",
+    "groupId": 1
 }
 """
 
 unsubscribeFromEventTypeReq = """
 {
     "type": "unsubscribe-from-event-type",
-    "eventType": "test-event"
+    "eventType": "test-event",
+    "groupId": 1
 }
 """
 

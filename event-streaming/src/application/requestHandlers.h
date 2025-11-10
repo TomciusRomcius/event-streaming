@@ -122,7 +122,8 @@ public:
 		LOG_TRACE("Entered SubscribeToEventHandler::Execute");
 		std::string eventTypeName = json["eventType"];
 		LOG_DEBUG("Retrieved event type name: '{}'", eventTypeName);
-		m_EventSystem.Subscribe(eventTypeName, request.socket);
+		GroupId groupId = json["groupId"];
+		m_EventSystem.Subscribe(eventTypeName, groupId, request.socket);
 	}
 private:
 	EventSystem& m_EventSystem;
@@ -144,7 +145,8 @@ public:
 		nlohmann::json json = request.body;
 		LOG_DEBUG("UnsubscribeFromEventHandler request json: '{}'", nlohmann::to_string(json));
 		std::string eventTypeName = json["eventType"];
-		m_EventSystem.Unsubscribe(eventTypeName, request.socket);
+		GroupId groupId = json["groupId"];
+		m_EventSystem.Unsubscribe(eventTypeName, groupId, request.socket);
 	}
 private:
 	EventSystem& m_EventSystem;
