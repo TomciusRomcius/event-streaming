@@ -72,6 +72,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 					std::strerror(errno)
 				);
 				free(buffer);
+				m_TcpSocketConnectionManager.TerminateConnection(clientSocket);
 				continue; // Skip to the next socket
 			}
 
