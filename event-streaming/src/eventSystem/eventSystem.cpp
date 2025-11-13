@@ -108,16 +108,18 @@ void EventSystem::Publish(Event& event)
 		throw std::runtime_error("Publish failed: event type has not been registered!");
 	}
 
-	// TODO extract group load balancing logic and implement round robin instead of random
 	std::string formedMessage = FormMessage(event);
 	std::vector<SocketType> sockets;
 	sockets.reserve(it->second.size());
 	for (auto& group : it->second)
 	{
 		srand(time(0));
-		SocketType sock = group.Sockets[rand() % group.Sockets.size()];
-		LOG_DEBUG("Sending event '{}' to socket '{}'", event.GetName(), sock);
-		m_TcpSocketMessenger.QueueMessage({ sock }, formedMessage);
+		std::optional<SocketType> sock = group.GetNextSocket();
+		if (sock.has_value())
+		{
+			LOG_DEBUG("Sending event '{}' to socket '{}'", event.GetName(), sock.value());
+			m_TcpSocketMessenger.QueueMessage({ sock.value()}, formedMessage);
+		}
 	}
 }
 

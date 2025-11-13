@@ -6,7 +6,7 @@
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
-add_executable (event-streaming  ${SOURCES} "src/eventSystem/groupContainer.h")
+add_executable (event-streaming  ${SOURCES} "src/eventSystem/eventGroup.h")
 target_precompile_headers (event-streaming PRIVATE src/pch.h)
 target_compile_definitions(event-streaming PRIVATE SPDLOG_ACTIVE_LEVEL=0)
 
