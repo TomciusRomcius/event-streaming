@@ -7,12 +7,17 @@
 class TcpSocketConnectionManager
 {
 public:
-	TcpSocketConnectionManager(TcpConnectionPool& tcpConnectionPool, int serverPort);
+	TcpSocketConnectionManager(
+		InternalEventBus& internalEventBus, 
+		TcpConnectionPool& tcpConnectionPool,
+		int serverPort
+	);
 	~TcpSocketConnectionManager();
 	void InitializeServerSocket();
 	void TryAcceptIncomingConnection();
 	void TerminateConnection(unsigned int socket);
 private:
+	InternalEventBus& m_InternalEventBus; 
 	TcpConnectionPool& m_TcpConnectionPool;
 	unsigned int m_ServerPort;
 	unsigned int m_ServerSocket;

@@ -14,7 +14,7 @@ TcpSocketMessenger::TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool, Mem
 {}
 
 // Used for generating TCP message buffer. Returns a pointer to allocated buffer
-std::unique_ptr<void, void(*)(void *)> TcpSocketMessenger::FormTcpMessage(const std::string &message, uint32_t *bufferSize)
+MemoryChunkUser&& TcpSocketMessenger::FormTcpMessage(const std::string& message, uint32_t* bufferSize)
 {
 	LOG_TRACE("Entered FormTcpMessage");
 	uint32_t messageSize = message.length();
@@ -24,7 +24,7 @@ std::unique_ptr<void, void(*)(void *)> TcpSocketMessenger::FormTcpMessage(const 
 	std::optional<MemoryChunkUser> memoryChunk = m_MemoryPool.GetMemoryChunk(*bufferSize);
 	if (!memoryChunk.has_value())
 	{
-		throw new std::runtime_error("Memory chunk allocation failed");
+		throw std::runtime_error("Memory chunk allocation failed");
 	}
 	void* buffer = memoryChunk->GetBuffer();
 	uint32_t* sizePointer = static_cast<uint32_t*>(buffer);
@@ -33,7 +33,7 @@ std::unique_ptr<void, void(*)(void *)> TcpSocketMessenger::FormTcpMessage(const 
 	memcpy(messagePointer, message.c_str(), messageSize);
 	LOG_DEBUG("TCP message size: {}", *bufferSize);
 	LOG_DEBUG("User message size: {}", messageSize);
-	return std::unique_ptr<void, void (*)(void*)>(buffer, free);
+	return std::move(memoryChunk.value());
 }
 
 void TcpSocketMessenger::Update()
@@ -47,13 +47,14 @@ void TcpSocketMessenger::Update()
 		int socket = get<0>(message);
 		LOG_DEBUG("Sending a new message to socket {}", socket);
 		uint32_t bufferSize;
-		std::unique_ptr<void, void (*)(void*)> messageBuffer = FormTcpMessage(sMessage, &bufferSize);
+		MemoryChunkUser memoryChunkUser = FormTcpMessage(sMessage, &bufferSize);
+		auto messageBuffer = static_cast<const char*>(memoryChunkUser.GetBuffer());
 		if (!m_TcpConnectionPool.HasClientSocket(socket))
 		{
 			LOG_ERROR("Send request failed: socket {} does not exist", socket);
 		}
 
-		if (send(socket, messageBuffer.get(), bufferSize, 0) == -1)
+		if (send(socket, messageBuffer, bufferSize, 0) == -1)
 		{
 			LOG_ERROR("Send request failed: '{}'", std::strerror(errno));
 		}
@@ -67,7 +68,7 @@ bool TcpSocketMessenger::QueueMessage(const std::vector<SocketType> &targetSocke
 	LOG_TRACE("Entered TcpSocketMessenger::QueueMessage");
 	for (auto socket : targetSockets)
 	{
-		m_MessageQueue.emplace(std::tuple<int, std::string>(socket, message));
+		m_MessageQueue.emplace(socket, message);
 	}
 	return true;
 }

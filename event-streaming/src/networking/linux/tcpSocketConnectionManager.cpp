@@ -1,4 +1,4 @@
-#ifdef __linux
+#ifdef __linux__
 
 #include "tcpSocketConnectionManager.h"
 #include "../../application/logging.h"
@@ -8,8 +8,10 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-TcpSocketConnectionManager::TcpSocketConnectionManager(TcpConnectionPool& tcpConnectionPool, int serverPort)
-	: m_TcpConnectionPool(tcpConnectionPool), m_ServerPort(serverPort)
+TcpSocketConnectionManager::TcpSocketConnectionManager(InternalEventBus& internalEventBus,
+	TcpConnectionPool& tcpConnectionPool,
+	int serverPort)
+	: m_InternalEventBus(internalEventBus), m_TcpConnectionPool(tcpConnectionPool), m_ServerPort(serverPort)
 {
 }
 
