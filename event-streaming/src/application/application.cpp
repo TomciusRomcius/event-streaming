@@ -88,8 +88,9 @@ void Application::HandleTcpMessage(const std::string& message, unsigned int sock
 		LOG_ERROR(ex.what());
 	}
 
-	catch (const std::exception& e) {
-		std::cerr << "std::exception: " << e.what() << '\n';
+	catch (const std::exception& ex)
+	{
+		LOG_ERROR(ex.what());
 	}
 
 	catch (...)
