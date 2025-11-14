@@ -90,7 +90,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 			LOG_DEBUG("Received message: '{}'", message);
 			free(buffer);
 			m_ProcessingSocketsToMsgSize.erase(clientSocket);
-			messageHandler(message, clientSocket); // Call the provided message handler with the received message
+			messageHandler(std::move(message), clientSocket); // Call the provided message handler with the received message
 		}
 
 		else
