@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 #include "tcpSocketConnectionManager.h"
+#include "../../core/memoryPool.h"
 
 enum class TcpSocketState
 {
@@ -27,12 +28,17 @@ struct TcpSocketContext
 class TcpMessageReceiver
 {
 public:
-	TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConnectionManager, TcpConnectionPool& tcpConnectionPool);
+	TcpMessageReceiver(
+		TcpSocketConnectionManager& tcpSocketConnectionManager,
+		TcpConnectionPool& tcpConnectionPool,
+		MemoryPool& memoryPool
+	);
 	/// @param messageHandler A lambda that takes in a message body and socket
 	void TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler);
 private:
 	TcpSocketConnectionManager& m_TcpSocketConnectionManager;
 	TcpConnectionPool& m_TcpConnectionPool;
+	MemoryPool& m_MemoryPool;
 	std::unordered_map<unsigned int, uint32_t> m_ProcessingSocketsToMsgSize;
 };
 

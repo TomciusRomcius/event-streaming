@@ -10,13 +10,16 @@
 #include <sys/ioctl.h>
 
 TcpMessageReceiver::TcpMessageReceiver(
-	TcpSocketConnectionManager& tcpSocketConnectionManager,
-	TcpConnectionPool& tcpConnectionPool)
-	: m_TcpSocketConnectionManager(tcpSocketConnectionManager), m_TcpConnectionPool(tcpConnectionPool)
+	TcpSocketConnectionManager &tcpSocketConnectionManager,
+	TcpConnectionPool &tcpConnectionPool,
+	MemoryPool &memoryPool)
+	: m_TcpSocketConnectionManager(tcpSocketConnectionManager),
+	  m_TcpConnectionPool(tcpConnectionPool),
+	  m_MemoryPool(memoryPool)
 {
 }
 
-void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler)
+void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)> &messageHandler)
 {
 	fd_set socketFdSet;
 	FD_ZERO(&socketFdSet);
@@ -24,7 +27,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 	int maxFd = -1;
 
 	// Add all sockets to the set
-	for (const auto& clientSocket : m_TcpConnectionPool.GetClientSockets())
+	for (const auto &clientSocket : m_TcpConnectionPool.GetClientSockets())
 	{
 		FD_SET(clientSocket, &socketFdSet);
 		if ((int)clientSocket > maxFd)
@@ -45,12 +48,11 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 	{
 		LOG_ERROR(
 			"Failed to determine status of sockets: select() failed'{}'",
-			std::strerror(errno)
-		);
+			std::strerror(errno));
 		return;
 	}
 
-	for (auto& clientSocket : m_TcpConnectionPool.GetClientSockets())
+	for (auto &clientSocket : m_TcpConnectionPool.GetClientSockets())
 	{
 		if (!FD_ISSET(clientSocket, &socketFdSet))
 			continue;
@@ -59,7 +61,9 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 		if (m_ProcessingSocketsToMsgSize.contains(clientSocket))
 		{
 			int bufSize = m_ProcessingSocketsToMsgSize.at(clientSocket);
-			void* buffer = malloc(bufSize);
+ 			std::optional<MemoryChunkUser> memoryChunkUser = m_MemoryPool.GetMemoryChunk(bufSize);
+			assert(memoryChunkUser.has_value());
+			void* buffer = memoryChunkUser.value().GetBuffer();
 			ssize_t receivedBytes = recv(clientSocket, buffer, bufSize, 0);
 			if (receivedBytes == 0) // Connection closed
 			{
@@ -71,8 +75,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 				LOG_ERROR(
 					"Failed to read incoming data for socket {}: '{}'",
 					clientSocket,
-					std::strerror(errno)
-				);
+					std::strerror(errno));
 				free(buffer);
 				continue; // Skip to the next socket
 			}
@@ -83,7 +86,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 				m_TcpSocketConnectionManager.TerminateConnection(clientSocket);
 				continue;
 			}
-			std::string message((char*)buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
+			std::string message((char *)buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
 			LOG_DEBUG("Received message: '{}'", message);
 			free(buffer);
 			m_ProcessingSocketsToMsgSize.erase(clientSocket);
@@ -94,17 +97,16 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
 		{
 			LOG_DEBUG("Reading request body size");
 			int bufSize = 4;
-			void* buffer = malloc(bufSize);
+			void *buffer = malloc(bufSize);
 			if (recv(clientSocket, buffer, bufSize, 0) == 0)
 			{
 				m_TcpConnectionPool.RemoveClientSocket(clientSocket);
 				continue;
 			}
 
-			uint32_t requestBytes = BigEndianToHost32(*(uint32_t*)buffer);
+			uint32_t requestBytes = BigEndianToHost32(*(uint32_t *)buffer);
 			LOG_DEBUG("Socket {} message size is {}", clientSocket, requestBytes);
-			m_ProcessingSocketsToMsgSize.insert({ clientSocket, requestBytes });
-			free(buffer);
+			m_ProcessingSocketsToMsgSize.insert({clientSocket, requestBytes});
 		}
 	}
 }
