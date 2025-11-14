@@ -1,19 +1,17 @@
-#include <map>
 #include "eventGroup.h"
+#include <map>
 
-EventGroup::EventGroup(GroupId groupId)
-	: EventGroupId(groupId)
-{
-}
+EventGroup::EventGroup(GroupId groupId) : EventGroupId(groupId) {}
+
 std::optional<SocketType> EventGroup::GetNextSocket()
 {
-	if (Sockets.size() == 0)
-		return std::nullopt;
-	SocketType sock = Sockets[m_NextSocketIndex];
-	if (m_NextSocketIndex + 1 < Sockets.size())
-		m_NextSocketIndex++;
-	else
-		m_NextSocketIndex = 0;
+    if (Sockets.size() == 0)
+        return std::nullopt;
+    SocketType sock = Sockets[m_NextSocketIndex];
+    if (m_NextSocketIndex + 1 < Sockets.size())
+        m_NextSocketIndex++;
+    else
+        m_NextSocketIndex = 0;
 
-	return std::optional<SocketType>(sock);
+    return std::optional<SocketType>(sock);
 }

@@ -3,9 +3,9 @@
 
 int main()
 {
-	std::cout << "Event streaming application started." << std::endl;
+    std::cout << "Event streaming application started." << std::endl;
 
-	Application app;
-	app.Start();
-	return 0;
+    Application app;
+    app.Start();
+    return 0;
 }

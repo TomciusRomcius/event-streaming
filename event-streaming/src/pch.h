@@ -1,12 +1,12 @@
-#include <iostream>
-#include <vector>
-#include <set>
-#include <memory>
 #include <algorithm>
-#include <functional>
-#include <string>
 #include <cfloat>
 #include <cstdint>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "application/logging.h"
 
@@ -15,8 +15,8 @@
 #endif
 
 #ifdef __linux__
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/ioctl.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
+#include <sys/socket.h>
 #endif

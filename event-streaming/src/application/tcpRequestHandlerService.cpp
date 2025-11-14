@@ -1,6 +1,7 @@
 #include "tcpRequestHandlerService.h"
 
-void TcpRequestHandlerService::RegisterStrategy(const std::string& requestType, std::unique_ptr<ITcpRequestHandler>&& handler)
+void TcpRequestHandlerService::RegisterStrategy(const std::string& requestType,
+                                                std::unique_ptr<ITcpRequestHandler>&& handler)
 {
     m_StrategyMap[requestType] = std::move(handler);
 }

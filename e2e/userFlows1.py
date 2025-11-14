@@ -62,10 +62,12 @@ produceEventReq = """
 }
 """
 
+
 def generate_tcp_message(message: str):
     messageBytes = message.encode(encoding="utf-8")
     bufSize = len(messageBytes)
     return bufSize.to_bytes(4, 'big') + messageBytes
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((host, port))

@@ -6,8 +6,8 @@
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
-add_executable (event-streaming  ${SOURCES} "src/eventSystem/eventGroup.h")
-target_precompile_headers (event-streaming PRIVATE src/pch.h)
+add_executable(event-streaming ${SOURCES} "src/eventSystem/eventGroup.h")
+target_precompile_headers(event-streaming PRIVATE src/pch.h)
 target_compile_definitions(event-streaming PRIVATE SPDLOG_ACTIVE_LEVEL=0)
 
 include(FetchContent)
@@ -19,11 +19,11 @@ target_link_libraries(event-streaming PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(event-streaming PRIVATE spdlog)
 
 if (WIN32)
-  target_link_libraries(event-streaming PRIVATE ws2_32.lib)
-endif()
+    target_link_libraries(event-streaming PRIVATE ws2_32.lib)
+endif ()
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET event-streaming PROPERTY CXX_STANDARD 20)
-endif()
+    set_property(TARGET event-streaming PROPERTY CXX_STANDARD 20)
+endif ()
 
 
 # TODO: Add tests and install targets if needed.

@@ -11,19 +11,20 @@
 class TcpSocketConnectionManager
 {
 public:
-	TcpSocketConnectionManager(
-		InternalEventBus& internalEventBus, 
-		TcpConnectionPool& tcpConnectionPool,
-		int serverPort
-	);
-	~TcpSocketConnectionManager();
-	void InitializeServerSocket();
-	void TryAcceptIncomingConnection();
-	void TerminateConnection(unsigned int socket);
+    TcpSocketConnectionManager(InternalEventBus& internalEventBus, TcpConnectionPool& tcpConnectionPool,
+                               int serverPort);
+
+    ~TcpSocketConnectionManager();
+
+    void InitializeServerSocket();
+
+    void TryAcceptIncomingConnection();
+
+    void TerminateConnection(unsigned int socket);
 private:
-	TcpConnectionPool& m_TcpConnectionPool;
-	InternalEventBus& m_InternalEventBus;
-	unsigned int m_ServerPort;
-	unsigned int m_ServerSocket;
-	sockaddr_in m_ServerAddress;
+    TcpConnectionPool& m_TcpConnectionPool;
+    InternalEventBus& m_InternalEventBus;
+    unsigned int m_ServerPort;
+    unsigned int m_ServerSocket;
+    sockaddr_in m_ServerAddress;
 };
