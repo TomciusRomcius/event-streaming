@@ -61,12 +61,15 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
             ssize_t receivedBytes = recv(clientSocket, buffer, bufSize, 0);
             if (receivedBytes == 0) // Connection closed
             {
-                m_TcpConnectionPool.RemoveClientSocket(clientSocket);
+                m_TcpSocketConnectionManager.TerminateConnection(clientSocket);
+                m_ProcessingSocketsToMsgSize.erase(clientSocket);
                 continue;
             }
             if (receivedBytes < 0)
             {
                 LOG_ERROR("Failed to read incoming data for socket {}: '{}'", clientSocket, std::strerror(errno));
+                m_TcpSocketConnectionManager.TerminateConnection(clientSocket);
+                m_ProcessingSocketsToMsgSize.erase(clientSocket);
                 free(buffer);
                 continue; // Skip to the next socket
             }
@@ -75,6 +78,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
             {
                 LOG_WARN("Malformed request");
                 m_TcpSocketConnectionManager.TerminateConnection(clientSocket);
+                m_ProcessingSocketsToMsgSize.erase(clientSocket);
                 continue;
             }
             std::string message((char*) buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
@@ -92,7 +96,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
             void* buffer = malloc(bufSize);
             if (recv(clientSocket, buffer, bufSize, 0) == 0)
             {
-                m_TcpConnectionPool.RemoveClientSocket(clientSocket);
+                m_TcpSocketConnectionManager.TerminateConnection(clientSocket);
                 continue;
             }
 
