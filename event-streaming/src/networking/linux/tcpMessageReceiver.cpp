@@ -79,7 +79,6 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
             }
             std::string message((char*) buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
             LOG_DEBUG("Received message: '{}'", message);
-            free(buffer);
             m_ProcessingSocketsToMsgSize.erase(clientSocket);
             messageHandler(std::move(message),
                            clientSocket); // Call the provided message handler with
