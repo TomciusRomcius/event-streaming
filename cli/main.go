@@ -7,17 +7,14 @@ import (
 	"time"
 )
 
-type cmdHandler func([]string)
-
-var cmdMap = map[string]cmdHandler{
-	"subscribe": HandleSubscribe,
-}
-
-var argMap = map[string]int{
-	"subscribe": 1,
-}
+var cmdMap = make(map[string]CmdService)
 
 func main() {
+	var tcpService = TcpService{}
+
+	var subscribeService = SubscribeService{tcpService: &tcpService}
+	cmdMap["subscribe"] = &subscribeService
+
 	go commandListener()
 	for {
 		time.Sleep(time.Second)
@@ -46,12 +43,13 @@ func commandListener() {
 			}
 		}
 
-		var expectedArgs = argMap[command]
-		if expectedArgs != len(args) {
-			fmt.Printf("Invalid arguments.")
+		var commandHandler = cmdMap[command]
+		if command == commandHandler || len(args) {
+			fmt.Print("Invalid command!\n")
+		} else if len(args) != commandHandler.GetArgCount() {
+			fmt.Printf("Unexpected argument count.\n")
 		} else {
-			var commandHandler = cmdMap[command]
-			commandHandler(args)
+			commandHandler.Execute(args)
 		}
 	}
 }

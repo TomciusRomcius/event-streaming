@@ -1,9 +1,12 @@
 package main
 
-import "fmt"
+type SubscribeService struct {
+	tcpService *TcpService
+}
 
-func HandleSubscribe(args []string) {
-	for i := range args {
-		fmt.Printf("Arg: %s\n", args[i])
-	}
+func (service *SubscribeService) Execute(args []string) {
+}
+
+func (service *SubscribeService) GetArgCount() int {
+	return 1
 }
