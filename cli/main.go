@@ -38,7 +38,7 @@ func commandListener() {
 				if lPtr == 0 {
 					command = str[lPtr:rPtr]
 				} else {
-					args = append(args, str[lPtr:len(str)-1])
+					args = append(args, str[lPtr:rPtr])
 				}
 
 				lPtr = rPtr + 1
@@ -46,7 +46,7 @@ func commandListener() {
 		}
 
 		var commandHandler = cmdMap[command]
-		if command == commandHandler || len(args) {
+		if commandHandler == nil {
 			fmt.Print("Invalid command!\n")
 		} else if len(args) != commandHandler.GetArgCount() {
 			fmt.Printf("Unexpected argument count.\n")
