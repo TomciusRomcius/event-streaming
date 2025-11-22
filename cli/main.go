@@ -51,13 +51,15 @@ func commandListener() {
 		}
 
 		var commandHandler = cmdMap[command]
-		var expectedArgCount = commandHandler.GetArgCount()
 		if commandHandler == nil {
-			fmt.Print("Invalid command!\n")
-		} else if len(args) != expectedArgCount && expectedArgCount != -1 {
-			fmt.Printf("Unexpected argument count.\n")
+			fmt.Println("Invalid command")
 		} else {
-			commandHandler.Execute(args)
+			var expectedArgCount = commandHandler.GetArgCount()
+			if len(args) != expectedArgCount && expectedArgCount != -1 {
+				fmt.Printf("Unexpected argument count.\n")
+			} else {
+				commandHandler.Execute(args)
+			}
 		}
 	}
 }
