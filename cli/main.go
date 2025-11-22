@@ -23,6 +23,11 @@ func main() {
 	}
 	cmdMap["create-event-type"] = &createEventTypeService
 
+	var produceEventService = ProduceEventService{
+		tcpService: &tcpService,
+	}
+	cmdMap["produce-event"] = &produceEventService
+
 	go commandListener()
 	for {
 		time.Sleep(time.Second)
