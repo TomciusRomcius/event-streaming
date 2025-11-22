@@ -12,6 +12,9 @@ var cmdMap = make(map[string]CmdService)
 func main() {
 	var tcpService = TcpService{}
 
+	var connectService = ConnectService{tcpService: &tcpService}
+	cmdMap["connect"] = &connectService
+
 	var subscribeService = SubscribeService{tcpService: &tcpService}
 	cmdMap["subscribe"] = &subscribeService
 
@@ -31,7 +34,6 @@ func commandListener() {
 		var lPtr = 0
 		var rPtr = 0
 		for ; rPtr < len(str); rPtr++ {
-			fmt.Printf("str[i]: %c\n", str[rPtr])
 			if str[rPtr] == ' ' || str[rPtr] == '\n' {
 				if lPtr == 0 {
 					command = str[lPtr:rPtr]
