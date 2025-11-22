@@ -18,6 +18,11 @@ func main() {
 	var subscribeService = SubscribeService{tcpService: &tcpService}
 	cmdMap["subscribe"] = &subscribeService
 
+	var createEventTypeService = CreateEventTypeService{
+		tcpService: &tcpService,
+	}
+	cmdMap["create-event-type"] = &createEventTypeService
+
 	go commandListener()
 	for {
 		time.Sleep(time.Second)
@@ -46,9 +51,10 @@ func commandListener() {
 		}
 
 		var commandHandler = cmdMap[command]
+		var expectedArgCount = commandHandler.GetArgCount()
 		if commandHandler == nil {
 			fmt.Print("Invalid command!\n")
-		} else if len(args) != commandHandler.GetArgCount() {
+		} else if len(args) != expectedArgCount && expectedArgCount != -1 {
 			fmt.Printf("Unexpected argument count.\n")
 		} else {
 			commandHandler.Execute(args)
