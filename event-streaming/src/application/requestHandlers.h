@@ -55,7 +55,7 @@ public:
 
     void Execute(TcpRequest request) override
     {
-        LOG_TRACE("Enetered ProduceEventHandler::Execute");
+        LOG_TRACE("Entered ProduceEventHandler::Execute");
         // TODO: move to_string to macro as even when log level is higher than debug
         // json serialization still happens
         nlohmann::json json = request.body;
@@ -64,37 +64,61 @@ public:
         LOG_DEBUG("Retrieved event type name: '{}'", eventTypeName);
         auto propsArray = json["properties"];
         std::unordered_map<std::string, std::unique_ptr<IProperty>> props;
+
+        EventType* eventType = m_EventSystem.GetEventType(eventTypeName);
+        std::unordered_map<std::string, PropertyType>& eventTypeProps = eventType->GetProperties();
+
+        bool error = false;
+
         for (auto it = propsArray.begin(); it != propsArray.end(); ++it)
         {
             std::string propName = (*it)["key"];
-            IProperty* property = ParseProperty(*it);
-            LOG_DEBUG("Retrieved property key: '{}', type: '{}'", propName, (int) property->GetPropertyType());
+            auto& propertyTypeIt = eventTypeProps.find(propName);
+            if (propertyTypeIt == eventTypeProps.end())
+            {
+                LOG_ERROR("Event type '{}' does not have a property named '{}'!", eventTypeName, propName);
+                error = true;
+                break;
+            }
+
+            PropertyType propType = propertyTypeIt->second;
+            IProperty* property = ParseProperty(*it, propType);
+            LOG_DEBUG("Retrieved property key: '{}', type: '{}'", propName, static_cast<int>(property->GetPropertyType()));
             if (property != nullptr)
             {
                 props.emplace(propName, property);
             }
+            else
+            {
+                LOG_ERROR("Failed to parse event type '{}' property '{}'!", eventTypeName, propName);
+                error = true;
+                break;
+            }
         }
 
-        auto event = Event(eventTypeName, std::move(props));
-        m_EventSystem.ProduceEvent(std::move(event));
+        if (!error)
+        {
+            auto event = Event(eventTypeName, std::move(props));
+            m_EventSystem.ProduceEvent(std::move(event));
+        }
     }
 private:
-    IProperty* ParseProperty(nlohmann::json propJson)
+    static IProperty* ParseProperty(nlohmann::json propJson, PropertyType propType)
     {
-        LOG_TRACE("Enetered ProduceEventHandler::ParseProperty");
+        LOG_TRACE("Entered ProduceEventHandler::ParseProperty");
         using value_t = nlohmann::json::value_t;
-        auto propType = propJson["value"].type();
-        if (propType == value_t::string)
+        if (propType == PropertyType::STRING && propJson.is_string())
         {
             return new StringProperty(propJson["value"]);
-        } else if (propType == value_t::number_integer || propType == value_t::number_unsigned ||
-                   propType == value_t::number_float)
+        } else if (propType == PropertyType::NUMBER && propJson.is_number())
         {
             return new NumberProperty(propJson["value"]);
-        } else if (propType == value_t::boolean)
+        } else if (propType == PropertyType::BOOLEAN && propJson.is_number())
         {
             return new BooleanProperty(propJson["value"]);
         }
+
+        return nullptr;
     }
 
     EventSystem& m_EventSystem;

@@ -14,6 +14,7 @@ public:
     // Checks if all properties are present in the given values map.
     bool ValidateEventValues(const std::unordered_map<std::string, std::unique_ptr<IProperty>>& values);
     inline std::string GetName() const { return m_Name; }
+    inline std::unordered_map<std::string, PropertyType>& GetProperties() { return m_Properties;}
 private:
     std::string m_Name;
     std::unordered_map<std::string, PropertyType> m_Properties;

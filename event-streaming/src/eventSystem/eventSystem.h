@@ -1,9 +1,8 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
-#include <random>
-#include <set>
 #include <vector>
+#include <unordered_map>
 #include "../networking/shared/tcpSocketMessenger.h"
 #include "event.h"
 #include "eventGroup.h"
@@ -28,6 +27,12 @@ public:
     void Unsubscribe(std::string& eventType, GroupId groupId, SocketType socket);
     void ProduceEvent(Event&& event);
     void HandleClientDisconnect(IInternalEvent* event);
+
+    inline EventType* GetEventType(std::string eventType)
+    {
+        auto it = m_EventTypes.find(eventType);
+        return it != m_EventTypes.end() ? it->second.get() : nullptr;
+    }
 private:
     void Publish(Event& event);
     std::string FormMessage(Event& event);
