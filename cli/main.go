@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -24,24 +26,32 @@ func main() {
 
 func commandListener() {
 	for {
-		var str = ""
-		fmt.Scanf("%s", &str)
+		reader := bufio.NewReader(os.Stdin)
+		str, _ := reader.ReadString('\n')
 
-		var commandHandler = cmdMap[str]
-		var argCount = argMap[str]
-
-		var formatStr = "%s"
-		for i := 0; i < argCount; i++ {
-			formatStr += " %s"
-		}
-
+		var command = ""
 		var args []string
-		readArgs, err := fmt.Sscanf(str, formatStr, &args)
-		if err != nil {
-			fmt.Printf("Error: %s\n", err.Error())
-		}
-		fmt.Printf("arg count: %d\n", readArgs)
+		var lPtr = 0
+		var rPtr = 0
+		for ; rPtr < len(str); rPtr++ {
+			fmt.Printf("str[i]: %c\n", str[rPtr])
+			if str[rPtr] == ' ' || str[rPtr] == '\n' {
+				if lPtr == 0 {
+					command = str[lPtr:rPtr]
+				} else {
+					args = append(args, str[lPtr:len(str)-1])
+				}
 
-		commandHandler(args[1 : len(args)-1])
+				lPtr = rPtr + 1
+			}
+		}
+
+		var expectedArgs = argMap[command]
+		if expectedArgs != len(args) {
+			fmt.Printf("Invalid arguments.")
+		} else {
+			var commandHandler = cmdMap[command]
+			commandHandler(args)
+		}
 	}
 }
