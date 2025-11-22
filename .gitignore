@@ -49,3 +49,4 @@ cmake-build*
 # build
 out
 cli/__debug_bin*
+*.txt
