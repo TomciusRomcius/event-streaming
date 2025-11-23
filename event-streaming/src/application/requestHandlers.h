@@ -85,6 +85,7 @@ public:
             IProperty* property = ParseProperty((*it)["value"], propType);
             if (property != nullptr)
             {
+                LOG_DEBUG("Retrieved property key: '{}', type: '{}'", propName, static_cast<int>(property->GetPropertyType()));
                 props.emplace(propName, property);
             }
             else
