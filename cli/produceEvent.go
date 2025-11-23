@@ -31,11 +31,17 @@ func (service *ProduceEventService) Execute(args []string) {
 	for i := range argMap["propName"] {
 		var name = argMap["propName"][i]
 		var value = argMap["value"][i]
-		var nValue, nErr = strconv.ParseFloat(value, 64)
-		if nErr != nil {
-			msg.Props = append(msg.Props, propDefinitionType{Name: name, Value: value})
+		// todo: rewrite this shit
+		if value == "true" || value == "false" {
+			var bValue = value == "true"
+			msg.Props = append(msg.Props, propDefinitionType{Name: name, Value: bValue})
 		} else {
-			msg.Props = append(msg.Props, propDefinitionType{Name: name, Value: nValue})
+			var nValue, nErr = strconv.ParseFloat(value, 64)
+			if nErr != nil {
+				msg.Props = append(msg.Props, propDefinitionType{Name: name, Value: value})
+			} else {
+				msg.Props = append(msg.Props, propDefinitionType{Name: name, Value: nValue})
+			}
 		}
 	}
 
