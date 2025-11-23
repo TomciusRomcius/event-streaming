@@ -69,11 +69,17 @@ public:
         std::unordered_map<std::string, PropertyType>& eventTypeProps = eventType->GetProperties();
 
         bool error = false;
-
         for (auto it = propsArray.begin(); it != propsArray.end(); ++it)
         {
             std::string propName = (*it)["key"];
-            auto& propertyTypeIt = eventTypeProps.find(propName);
+            if (props.find(propName) != props.end())
+            {
+                LOG_ERROR("Redefining property '{}' for event type '{}'", propName, eventTypeName);
+                error = true;
+                break;
+            }
+
+            auto propertyTypeIt = eventTypeProps.find(propName);
             if (propertyTypeIt == eventTypeProps.end())
             {
                 LOG_ERROR("Event type '{}' does not have a property named '{}'!", eventTypeName, propName);
