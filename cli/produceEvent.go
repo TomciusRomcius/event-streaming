@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strconv"
+)
 
 type ProduceEventService struct {
 	tcpService *TcpService
@@ -8,7 +11,7 @@ type ProduceEventService struct {
 
 type propDefinitionType struct {
 	Name  string `json:"key"`
-	Value any    `json:"type"`
+	Value any    `json:"value"`
 }
 
 type produceEventMsgType struct {
@@ -28,7 +31,12 @@ func (service *ProduceEventService) Execute(args []string) {
 	for i := range argMap["propName"] {
 		var name = argMap["propName"][i]
 		var value = argMap["value"][i]
-		msg.Props = append(msg.Props, propDefinitionType{Name: name, Value: value})
+		var nValue, nErr = strconv.ParseFloat(value, 64)
+		if nErr != nil {
+			msg.Props = append(msg.Props, propDefinitionType{Name: name, Value: value})
+		} else {
+			msg.Props = append(msg.Props, propDefinitionType{Name: name, Value: nValue})
+		}
 	}
 
 	var msgJson, _ = json.Marshal(msg)
