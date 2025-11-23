@@ -8,6 +8,7 @@ import (
 
 type TcpService struct {
 	connection net.Conn
+	onConnect  func()
 }
 
 func (cm *TcpService) ConnectTcp(hostname string) {
@@ -16,7 +17,23 @@ func (cm *TcpService) ConnectTcp(hostname string) {
 		fmt.Printf("Error while connecting to %s: %s", hostname, err.Error())
 	} else {
 		cm.connection = conn
+		cm.onConnect()
 	}
+}
+
+// blocking call without select()
+func (cm *TcpService) ReceiveMessageStr() (string, error) {
+	var sizeBuffer []byte = make([]byte, 4)
+	var _, err = cm.connection.Read(sizeBuffer)
+	if err != nil {
+		return "", err
+	}
+
+	var msgSize = binary.BigEndian.Uint32(sizeBuffer)
+	var msgBuffer = make([]byte, msgSize)
+	var _, _ = cm.connection.Read(msgBuffer)
+
+	return string(msgBuffer), nil
 }
 
 func (cm *TcpService) SendMessage(message string) {

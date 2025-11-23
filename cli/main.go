@@ -4,13 +4,28 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"time"
 )
 
 var cmdMap = make(map[string]CmdService)
 
+func socketListener(tcpService *TcpService) {
+	for {
+		var msg, err = tcpService.ReceiveMessageStr()
+		if err != nil {
+			tcpService.connection.Close()
+			fmt.Println("Client disconnected. Connect again using connect command")
+			break
+		}
+
+		fmt.Printf("Incoming message: %s\n", msg)
+	}
+}
+
 func main() {
 	var tcpService = TcpService{}
+	tcpService.onConnect = func() {
+		go socketListener(&tcpService)
+	}
 
 	var connectService = ConnectService{tcpService: &tcpService}
 	cmdMap["connect"] = &connectService
@@ -28,10 +43,7 @@ func main() {
 	}
 	cmdMap["produce-event"] = &produceEventService
 
-	go commandListener()
-	for {
-		time.Sleep(time.Second)
-	}
+	commandListener()
 }
 
 func commandListener() {
