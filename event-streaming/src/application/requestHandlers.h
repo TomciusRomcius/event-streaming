@@ -82,8 +82,7 @@ public:
             }
 
             PropertyType propType = propertyTypeIt->second;
-            IProperty* property = ParseProperty(*it, propType);
-            LOG_DEBUG("Retrieved property key: '{}', type: '{}'", propName, static_cast<int>(property->GetPropertyType()));
+            IProperty* property = ParseProperty((*it)["value"], propType);
             if (property != nullptr)
             {
                 props.emplace(propName, property);
@@ -103,19 +102,19 @@ public:
         }
     }
 private:
-    static IProperty* ParseProperty(nlohmann::json propJson, PropertyType propType)
+    static IProperty* ParseProperty(nlohmann::json propValue, PropertyType propType)
     {
         LOG_TRACE("Entered ProduceEventHandler::ParseProperty");
         using value_t = nlohmann::json::value_t;
-        if (propType == PropertyType::STRING && propJson.is_string())
+        if (propType == PropertyType::STRING && propValue.is_string())
         {
-            return new StringProperty(propJson["value"]);
-        } else if (propType == PropertyType::NUMBER && propJson.is_number())
+            return new StringProperty(propValue);
+        } else if (propType == PropertyType::NUMBER && propValue.is_number())
         {
-            return new NumberProperty(propJson["value"]);
-        } else if (propType == PropertyType::BOOLEAN && propJson.is_number())
+            return new NumberProperty(propValue);
+        } else if (propType == PropertyType::BOOLEAN && propValue.is_number())
         {
-            return new BooleanProperty(propJson["value"]);
+            return new BooleanProperty(propValue);
         }
 
         return nullptr;
