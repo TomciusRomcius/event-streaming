@@ -14,7 +14,9 @@ typedef int SocketType;
 struct TcpConnectionPool
 {
 public:
-    TcpConnectionPool(InternalEventBus& internalEventBus) : m_InternalEventBus(internalEventBus) {}
+    TcpConnectionPool(InternalEventBus& internalEventBus) : m_InternalEventBus(internalEventBus)
+    {
+    }
 
     inline void AddClientSocket(SocketType socket)
     {
@@ -46,6 +48,7 @@ public:
     inline bool Empty() const { return m_ClientSockets.empty(); }
 
     inline std::set<SocketType> GetClientSockets() { return m_ClientSockets; }
+
 private:
     InternalEventBus& m_InternalEventBus;
     std::set<SocketType> m_ClientSockets;

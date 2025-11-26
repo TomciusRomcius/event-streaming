@@ -11,7 +11,8 @@
 TcpSocketConnectionManager::TcpSocketConnectionManager(InternalEventBus& internalEventBus,
                                                        TcpConnectionPool& tcpConnectionPool, int serverPort) :
     m_InternalEventBus(internalEventBus), m_TcpConnectionPool(tcpConnectionPool), m_ServerPort(serverPort)
-{}
+{
+}
 
 TcpSocketConnectionManager::~TcpSocketConnectionManager()
 {
@@ -38,7 +39,7 @@ void TcpSocketConnectionManager::InitializeServerSocket()
     m_ServerAddress.sin_port = htons(m_ServerPort);
     m_ServerAddress.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(m_ServerSocket, (sockaddr*) &m_ServerAddress, sizeof(m_ServerAddress)) == -1)
+    if (bind(m_ServerSocket, (sockaddr*)&m_ServerAddress, sizeof(m_ServerAddress)) == -1)
     {
         LOG_ERROR("Failed to bind server socket to server address: '{}'", std::strerror(errno));
         throw std::runtime_error("Failed to bind server socket");
@@ -77,7 +78,7 @@ void TcpSocketConnectionManager::TryAcceptIncomingConnection()
     LOG_DEBUG("Incoming tcp connection");
     sockaddr_in clientAddr;
     socklen_t clientAddrLen = sizeof(clientAddr);
-    int clientSocket = accept(m_ServerSocket, (sockaddr*) &clientAddr, &clientAddrLen);
+    int clientSocket = accept(m_ServerSocket, (sockaddr*)&clientAddr, &clientAddrLen);
     if (clientSocket == -1)
     {
         LOG_ERROR("An error occured while accepting an incoming TCP connection: {}", std::strerror(errno));

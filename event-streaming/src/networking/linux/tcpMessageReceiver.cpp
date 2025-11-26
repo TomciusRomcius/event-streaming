@@ -13,7 +13,8 @@ TcpMessageReceiver::TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConn
                                        TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool) :
     m_TcpSocketConnectionManager(tcpSocketConnectionManager), m_TcpConnectionPool(tcpConnectionPool),
     m_MemoryPool(memoryPool)
-{}
+{
+}
 
 void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler)
 {
@@ -86,10 +87,8 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
             m_ProcessingSocketsToMsgSize.erase(clientSocket);
             messageHandler(std::move(message),
                            clientSocket); // Call the provided message handler with
-                                          // the received message
-        }
-
-        else
+            // the received message
+        } else
         {
             LOG_DEBUG("Reading request body size");
             int bufSize = 4;

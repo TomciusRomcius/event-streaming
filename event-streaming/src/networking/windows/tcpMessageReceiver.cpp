@@ -9,9 +9,10 @@
 TcpMessageReceiver::TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConnectionManager,
                                        TcpConnectionPool& tcpConnectionPool) :
     m_TcpSocketConnectionManager(tcpSocketConnectionManager), m_TcpConnectionPool(tcpConnectionPool)
-{}
+{
+}
 
-void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler)
+void TcpMessageReceiver::TryReceiveMessage(const std::function < void(std::string, unsigned int) > &messageHandler)
 {
     std::set<SOCKET> clientSockets = m_TcpConnectionPool.GetClientSockets();
     if (clientSockets.empty())
@@ -23,7 +24,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
     FD_ZERO(&socketFdSet);
 
     // Add all sockets to the set
-    for (const auto& clientSocket: m_TcpConnectionPool.GetClientSockets())
+    for (const auto& clientSocket : m_TcpConnectionPool.GetClientSockets())
     {
         FD_SET(clientSocket, &socketFdSet);
     }
@@ -43,7 +44,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
         return;
     }
 
-    for (auto& clientSocket: clientSockets)
+    for (auto& clientSocket : clientSockets)
     {
         if (!FD_ISSET(clientSocket, &socketFdSet))
             continue;
@@ -52,7 +53,7 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
         if (m_ProcessingSocketsToMsgSize.contains(clientSocket))
         {
             int bufSize = m_ProcessingSocketsToMsgSize.at(clientSocket);
-            char* buffer = (char*) malloc(bufSize);
+            char* buffer = (char*)malloc(bufSize);
             int receivedBytes = recv(clientSocket, buffer, bufSize, 0);
             if (receivedBytes == 0) // Connection closed
             {
@@ -73,27 +74,27 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
                 m_TcpSocketConnectionManager.TerminateConnection(clientSocket);
                 continue;
             }
-            std::string message((char*) buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
+            std::string message((char*)buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
             LOG_DEBUG("Received message: '{}'", message);
             free(buffer);
             m_ProcessingSocketsToMsgSize.erase(clientSocket);
             messageHandler(message,
                            clientSocket); // Call the provided message handler with
-                                          // the received message
+            // the received message
         }
 
         else
         {
             LOG_DEBUG("Reading request body size");
             int bufSize = 4;
-            char* buffer = (char*) malloc(bufSize);
+            char* buffer = (char*)malloc(bufSize);
             if (recv(clientSocket, buffer, bufSize, 0) == 0)
             {
                 m_TcpConnectionPool.RemoveClientSocket(clientSocket);
                 continue;
             }
 
-            uint32_t requestBytes = BigEndianToHost32(*(uint32_t*) buffer);
+            uint32_t requestBytes = BigEndianToHost32(*(uint32_t*)buffer);
             LOG_DEBUG("Socket {} message size is {}", clientSocket, requestBytes);
             m_ProcessingSocketsToMsgSize.insert({clientSocket, requestBytes});
             free(buffer);

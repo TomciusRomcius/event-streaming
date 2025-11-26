@@ -1,7 +1,9 @@
 #include "eventGroup.h"
 #include <map>
 
-EventGroup::EventGroup(GroupId groupId) : EventGroupId(groupId) {}
+EventGroup::EventGroup(GroupId groupId) : EventGroupId(groupId)
+{
+}
 
 std::optional<SocketType> EventGroup::GetNextSocket()
 {

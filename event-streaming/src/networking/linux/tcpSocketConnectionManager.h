@@ -13,6 +13,7 @@ public:
     void InitializeServerSocket();
     void TryAcceptIncomingConnection();
     void TerminateConnection(unsigned int socket);
+
 private:
     InternalEventBus& m_InternalEventBus;
     TcpConnectionPool& m_TcpConnectionPool;

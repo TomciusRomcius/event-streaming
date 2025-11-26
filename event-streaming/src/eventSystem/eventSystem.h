@@ -33,9 +33,11 @@ public:
         auto it = m_EventTypes.find(eventType);
         return it != m_EventTypes.end() ? it->second.get() : nullptr;
     }
+
 private:
     void Publish(Event& event);
     std::string FormMessage(Event& event);
+
 private:
     TcpSocketMessenger& m_TcpSocketMessenger;
     std::vector<Event> m_Events;
