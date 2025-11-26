@@ -77,7 +77,7 @@ void Application::Start()
     }
 }
 
-void Application::HandleTcpMessage(const std::string& message, unsigned int socket)
+void Application::HandleTcpMessage(const std::string& message, SocketType socket)
 {
     LOG_TRACE("Entered Application::HandleTcpMessage");
     try

@@ -24,7 +24,7 @@ public:
     void RegisterRequestStrategies();
     void Start();
 private:
-    void HandleTcpMessage(const std::string& message, unsigned int socket);
+    void HandleTcpMessage(const std::string& message, SocketType socket);
 
     std::unique_ptr<InternalEventBus> m_InternalEventBus;
     std::unique_ptr<TcpConnectionPool> m_TcpConnectionPool;
