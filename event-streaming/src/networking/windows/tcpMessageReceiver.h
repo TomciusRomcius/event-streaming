@@ -14,9 +14,7 @@ struct TcpSocketContext
 {
     /// @param so Socket
     /// @param st Socket state
-    TcpSocketContext(unsigned int so, TcpSocketState st) : socket(so), state(st)
-    {
-    }
+    TcpSocketContext(unsigned int so, TcpSocketState st) : socket(so), state(st) {}
 
     SOCKET socket;
     TcpSocketState state;
@@ -30,7 +28,6 @@ public:
 
     /// @param messageHandler A lambda that takes in a message body and socket
     void TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler);
-
 private:
     TcpSocketConnectionManager& m_TcpSocketConnectionManager;
     TcpConnectionPool& m_TcpConnectionPool;

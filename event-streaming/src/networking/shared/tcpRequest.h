@@ -4,9 +4,7 @@
 
 struct TcpRequest
 {
-    TcpRequest(unsigned int s, nlohmann::json b) : socket(s), body(b)
-    {
-    }
+    TcpRequest(unsigned int s, nlohmann::json b) : socket(s), body(b) {}
 
     unsigned int socket;
     nlohmann::json body;

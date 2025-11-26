@@ -17,10 +17,7 @@ struct TcpSocketContext
 {
     /// @param so Socket
     /// @param st Socket state
-    TcpSocketContext(unsigned int so, TcpSocketState st) :
-        socket(so), state(st)
-    {
-    }
+    TcpSocketContext(unsigned int so, TcpSocketState st) : socket(so), state(st) {}
 
     unsigned int socket;
     TcpSocketState state;

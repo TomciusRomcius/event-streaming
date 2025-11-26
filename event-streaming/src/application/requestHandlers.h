@@ -16,10 +16,7 @@ public:
 class CreateEventTypeHandler : public ITcpRequestHandler
 {
 public:
-    explicit CreateEventTypeHandler(EventSystem& eventSystem) :
-        m_EventSystem(eventSystem)
-    {
-    }
+    explicit CreateEventTypeHandler(EventSystem& eventSystem) : m_EventSystem(eventSystem) {}
 
     void Execute(TcpRequest request) override
     {
@@ -54,10 +51,7 @@ class ProduceEventHandler : public ITcpRequestHandler
 public:
     using jsonIt = nlohmann::json_abi_v3_12_0::detail::iter_impl<nlohmann::json_abi_v3_12_0::json>;
 
-    explicit ProduceEventHandler(EventSystem& eventSystem) :
-        m_EventSystem(eventSystem)
-    {
-    }
+    explicit ProduceEventHandler(EventSystem& eventSystem) : m_EventSystem(eventSystem) {}
 
     void Execute(TcpRequest request) override
     {
@@ -139,10 +133,7 @@ private:
 class SubscribeToEventHandler : public ITcpRequestHandler
 {
 public:
-    explicit SubscribeToEventHandler(EventSystem& eventSystem) :
-        m_EventSystem(eventSystem)
-    {
-    }
+    explicit SubscribeToEventHandler(EventSystem& eventSystem) : m_EventSystem(eventSystem) {}
 
     void Execute(TcpRequest request) override
     {
@@ -160,10 +151,7 @@ private:
 class UnsubscribeFromEventHandler : public ITcpRequestHandler
 {
 public:
-    UnsubscribeFromEventHandler(EventSystem& eventSystem) :
-        m_EventSystem(eventSystem)
-    {
-    }
+    UnsubscribeFromEventHandler(EventSystem& eventSystem) : m_EventSystem(eventSystem) {}
 
     void Execute(TcpRequest request) override
     {

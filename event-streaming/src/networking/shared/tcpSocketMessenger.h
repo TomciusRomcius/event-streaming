@@ -12,7 +12,6 @@ public:
     explicit TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool);
     void Update();
     bool QueueMessage(const std::vector<SocketType>& targetSockets, std::string message);
-
 private:
     MemoryChunkUser&& FormTcpMessage(const std::string& message, uint32_t* bufferSize);
     TcpConnectionPool& m_TcpConnectionPool;

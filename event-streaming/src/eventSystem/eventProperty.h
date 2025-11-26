@@ -19,13 +19,10 @@ public:
 class StringProperty : public IProperty
 {
 public:
-    explicit StringProperty(std::string&& value) : m_Value(std::move(value))
-    {
-    }
+    explicit StringProperty(std::string&& value) : m_Value(std::move(value)) {}
 
     inline PropertyType GetPropertyType() override { return PropertyType::STRING; }
     inline std::string GetValue() const { return m_Value; }
-
 private:
     std::string m_Value;
 };
@@ -33,13 +30,10 @@ private:
 class NumberProperty : public IProperty
 {
 public:
-    explicit NumberProperty(double value) : m_Value(value)
-    {
-    }
+    explicit NumberProperty(double value) : m_Value(value) {}
 
     inline PropertyType GetPropertyType() override { return PropertyType::NUMBER; }
     inline double GetValue() const { return m_Value; }
-
 private:
     double m_Value;
 };
@@ -47,13 +41,10 @@ private:
 class BooleanProperty : public IProperty
 {
 public:
-    explicit BooleanProperty(bool value) : m_Value(value)
-    {
-    }
+    explicit BooleanProperty(bool value) : m_Value(value) {}
 
     inline PropertyType GetPropertyType() override { return PropertyType::BOOLEAN; }
     inline bool GetValue() const { return m_Value; }
-
 private:
     bool m_Value;
 };

@@ -7,13 +7,11 @@
 class MemoryChunk
 {
     friend class MemoryChunkUser;
-
 public:
     MemoryChunk(uint16_t chunkSize) : m_ChunkSize(chunkSize) { m_Buffer = malloc(chunkSize); }
     ~MemoryChunk() { free(m_Buffer); }
     inline void* GetBuffer() const { return m_Buffer; }
     inline uint16_t GetSize() const { return m_ChunkSize; }
-
 private:
     bool m_IsInUse = false;
     uint16_t m_ChunkSize;
@@ -29,30 +27,25 @@ public:
         if (memoryChunk.m_IsInUse)
         {
             LOG_WARN("Trying to create a MemoryChunkUser for a memory chunk that is "
-                "in use!");
+                     "in use!");
         }
         m_MemoryChunk.m_IsInUse = true;
     }
 
     ~MemoryChunkUser() { m_MemoryChunk.m_IsInUse = false; }
     inline void* GetBuffer() const { return m_MemoryChunk.GetBuffer(); }
-
 private:
     MemoryChunk& m_MemoryChunk;
 };
 
 inline auto MemoryChunkComp = [](const MemoryChunk& mc1, const MemoryChunk& mc2)
-{
-    return mc1.GetSize() < mc2.GetSize();
-};
+{ return mc1.GetSize() < mc2.GetSize(); };
 typedef std::set<MemoryChunk, decltype(MemoryChunkComp)> MemoryChunkSet;
 
 class MemoryPool
 {
 public:
-    MemoryPool(int maxPoolCount) : m_MaxPoolCount(maxPoolCount), m_MemoryChunks(MemoryChunkComp)
-    {
-    }
+    MemoryPool(int maxPoolCount) : m_MaxPoolCount(maxPoolCount), m_MemoryChunks(MemoryChunkComp) {}
 
     std::optional<MemoryChunkUser> GetMemoryChunk(int16_t chunkSize)
     {
@@ -61,7 +54,7 @@ public:
         if (chunkSize > MAX_CHUNK_SIZE)
         {
             LOG_WARN("Trying to get a memory chunk with a size, that exceeds "
-                "MAX_CHUNK_SIZE!");
+                     "MAX_CHUNK_SIZE!");
             return std::nullopt;
         }
 
@@ -90,7 +83,6 @@ public:
         auto& memoryChunk = const_cast<MemoryChunk&>(*m_MemoryChunks.rbegin());
         return MemoryChunkUser(memoryChunk);
     }
-
 private:
     MemoryChunkSet m_MemoryChunks;
     int m_MaxPoolCount;

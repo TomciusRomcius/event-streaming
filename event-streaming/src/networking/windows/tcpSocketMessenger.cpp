@@ -10,8 +10,7 @@ constexpr int BATCH_SIZE = 10;
 
 TcpSocketMessenger::TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool) :
     m_TcpConnectionPool(tcpConnectionPool), m_MemoryPool(memoryPool)
-{
-}
+{}
 
 // Used for generating TCP message buffer. Returns a pointer to allocated buffer
 MemoryChunkUser&& TcpSocketMessenger::FormTcpMessage(const std::string& message, uint32_t* bufferSize)
@@ -43,12 +42,12 @@ void TcpSocketMessenger::Update()
         if (m_MessageQueue.empty())
             return;
         std::tuple<int, std::string> message = m_MessageQueue.front();
-        std::string sMessage = get < 1 > (message);
-        int socket = get < 0 > (message);
+        std::string sMessage = get<1>(message);
+        int socket = get<0>(message);
         LOG_DEBUG("Sending a new message to socket {}", socket);
         uint32_t bufferSize;
         MemoryChunkUser messageBufferUser = FormTcpMessage(sMessage, &bufferSize);
-        const char* messageBuffer = (const char*)messageBufferUser.GetBuffer();
+        const char* messageBuffer = (const char*) messageBufferUser.GetBuffer();
         if (!m_TcpConnectionPool.HasClientSocket(socket))
         {
             LOG_ERROR("Send request failed: socket {} does not exist", socket);
@@ -66,7 +65,7 @@ void TcpSocketMessenger::Update()
 bool TcpSocketMessenger::QueueMessage(const std::vector<SocketType>& targetSockets, std::string message)
 {
     LOG_TRACE("Entered TcpSocketMessenger::QueueMessage");
-    for (auto socket : targetSockets)
+    for (auto socket: targetSockets)
     {
         m_MessageQueue.emplace(std::tuple<int, std::string>(socket, message));
     }

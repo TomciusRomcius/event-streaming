@@ -16,9 +16,7 @@ public:
 class ClientConnectedEvent : public IInternalEvent
 {
 public:
-    ClientConnectedEvent(SocketType clientSocket) : Socket(clientSocket)
-    {
-    }
+    ClientConnectedEvent(SocketType clientSocket) : Socket(clientSocket) {}
 
     inline InternalEventType GetType() override { return InternalEventType::CLIENT_CONNECTED; }
     SocketType Socket;
@@ -27,9 +25,7 @@ public:
 class ClientDisconnectedEvent : public IInternalEvent
 {
 public:
-    ClientDisconnectedEvent(SocketType clientSocket) : Socket(clientSocket)
-    {
-    }
+    ClientDisconnectedEvent(SocketType clientSocket) : Socket(clientSocket) {}
 
     inline InternalEventType GetType() override { return InternalEventType::CLIENT_DISCONNECTED; }
     SocketType Socket;

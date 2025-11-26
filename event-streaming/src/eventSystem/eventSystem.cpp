@@ -1,9 +1,7 @@
 #include "eventSystem.h"
 #include <algorithm>
 
-EventSystem::EventSystem(TcpSocketMessenger& tcpSocketMessenger) : m_TcpSocketMessenger(tcpSocketMessenger)
-{
-}
+EventSystem::EventSystem(TcpSocketMessenger& tcpSocketMessenger) : m_TcpSocketMessenger(tcpSocketMessenger) {}
 
 void EventSystem::RegisterEventType(std::unique_ptr<EventType>&& eventType)
 {
@@ -30,8 +28,7 @@ void EventSystem::Subscribe(std::string& eventType, GroupId groupId, SocketType 
         auto evGroup = EventGroup(groupId);
         evGroup.Sockets.push_back(socket);
         m_Groups[eventType] = {std::move(evGroup)};
-    }
-    else
+    } else
     {
         auto& groups = it->second;
         auto groupIt = std::find_if(groups.begin(), groups.end(),
@@ -39,8 +36,7 @@ void EventSystem::Subscribe(std::string& eventType, GroupId groupId, SocketType 
         if (groupIt != groups.end())
         {
             groupIt->Sockets.push_back(socket);
-        }
-        else
+        } else
         {
             auto evGroup = EventGroup(groupId);
             evGroup.Sockets.push_back(socket);
@@ -104,7 +100,7 @@ void EventSystem::Publish(Event& event)
     std::string formedMessage = FormMessage(event);
     std::vector<SocketType> sockets;
     sockets.reserve(it->second.size());
-    for (auto& group : it->second)
+    for (auto& group: it->second)
     {
         srand(time(0));
         std::optional<SocketType> sock = group.GetNextSocket();
@@ -120,7 +116,7 @@ std::string EventSystem::FormMessage(Event& event)
 {
     const std::unordered_map<std::string, std::unique_ptr<IProperty>>& props = event.GetProperties();
     nlohmann::json jsonMessage;
-    for (const auto& entry : props)
+    for (const auto& entry: props)
     {
         IProperty* property = entry.second.get();
         PropertyType propertyType = property->GetPropertyType();
@@ -132,8 +128,7 @@ std::string EventSystem::FormMessage(Event& event)
                 continue;
             }
             jsonMessage[entry.first] = strProperty->GetValue();
-        }
-        else if (propertyType == PropertyType::NUMBER)
+        } else if (propertyType == PropertyType::NUMBER)
         {
             auto numProperty = dynamic_cast<NumberProperty*>(property);
             if (!numProperty)
@@ -141,8 +136,7 @@ std::string EventSystem::FormMessage(Event& event)
                 continue;
             }
             jsonMessage[entry.first] = numProperty->GetValue();
-        }
-        else if (propertyType == PropertyType::BOOLEAN)
+        } else if (propertyType == PropertyType::BOOLEAN)
         {
             auto boolProperty = dynamic_cast<BooleanProperty*>(property);
             if (!boolProperty)
@@ -166,13 +160,13 @@ void EventSystem::HandleClientDisconnect(IInternalEvent* event)
     }
 
     SubscriberInfo& info = it->second;
-    for (auto& [key, value] : info.SubscribedEventTypes)
+    for (auto& [key, value]: info.SubscribedEventTypes)
     {
         auto groupIt = m_Groups.find(key);
         if (groupIt == m_Groups.end())
             continue;
 
-        for (auto& [eventType, groupIds] : info.SubscribedEventTypes)
+        for (auto& [eventType, groupIds]: info.SubscribedEventTypes)
         {
             auto groupsIt = m_Groups.find(eventType);
             if (groupsIt == m_Groups.end())
@@ -183,12 +177,10 @@ void EventSystem::HandleClientDisconnect(IInternalEvent* event)
             // TODO: Depending on the amount of groups the algorithm
             // could be more efficient as we are looping over a non-sorted vector of n
             // groups
-            for (auto groupId : groupIds)
+            for (auto groupId: groupIds)
             {
                 auto targetGroupIt = std::find_if(groups.begin(), groups.end(), [groupId](EventGroup& group)
-                {
-                    return group.EventGroupId == groupId;
-                });
+                                                  { return group.EventGroupId == groupId; });
                 groupsIt->second.erase(targetGroupIt);
             }
         }

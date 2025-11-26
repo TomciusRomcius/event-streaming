@@ -1,8 +1,8 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 #include "../networking/shared/tcpSocketMessenger.h"
 #include "event.h"
 #include "eventGroup.h"
@@ -33,11 +33,9 @@ public:
         auto it = m_EventTypes.find(eventType);
         return it != m_EventTypes.end() ? it->second.get() : nullptr;
     }
-
 private:
     void Publish(Event& event);
     std::string FormMessage(Event& event);
-
 private:
     TcpSocketMessenger& m_TcpSocketMessenger;
     std::vector<Event> m_Events;

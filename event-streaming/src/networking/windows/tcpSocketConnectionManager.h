@@ -21,7 +21,6 @@ public:
     void TryAcceptIncomingConnection();
 
     void TerminateConnection(unsigned int socket);
-
 private:
     TcpConnectionPool& m_TcpConnectionPool;
     InternalEventBus& m_InternalEventBus;

@@ -13,8 +13,7 @@ TcpMessageReceiver::TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConn
                                        TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool) :
     m_TcpSocketConnectionManager(tcpSocketConnectionManager), m_TcpConnectionPool(tcpConnectionPool),
     m_MemoryPool(memoryPool)
-{
-}
+{}
 
 void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler)
 {

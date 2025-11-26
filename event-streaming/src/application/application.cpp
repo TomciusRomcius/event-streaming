@@ -28,21 +28,13 @@ Application::Application()
             TcpSocketConnectionManager(*m_InternalEventBus, *m_TcpConnectionPool, serverPort));
     m_TcpConnectionManager->InitializeServerSocket();
 
-    m_TcpSocketMessenger = std::make_unique<TcpSocketMessenger>(
-            TcpSocketMessenger(*m_TcpConnectionPool, *m_MemoryPool)
-            );
+    m_TcpSocketMessenger =
+            std::make_unique<TcpSocketMessenger>(TcpSocketMessenger(*m_TcpConnectionPool, *m_MemoryPool));
 
     auto onReceiveMessage = [this](std::string&& message, SocketType socket)
-    {
-        HandleTcpMessage(std::move(message), socket);
-    };
+    { HandleTcpMessage(std::move(message), socket); };
     m_TcpMessageReceiver = std::make_unique<TcpMessageReceiver>(
-            TcpMessageReceiver(
-                    *m_TcpConnectionManager,
-                    *m_TcpConnectionPool,
-                    *m_MemoryPool
-                    )
-            );
+            TcpMessageReceiver(*m_TcpConnectionManager, *m_TcpConnectionPool, *m_MemoryPool));
     m_TcpRequestHandlerService = std::make_unique<TcpRequestHandlerService>();
     m_EventSystem = std::make_unique<EventSystem>(EventSystem(*m_TcpSocketMessenger));
 
@@ -72,9 +64,7 @@ void Application::Start()
     {
         m_TcpConnectionManager->TryAcceptIncomingConnection();
         m_TcpMessageReceiver->TryReceiveMessage([this](std::string message, unsigned int socket)
-        {
-            HandleTcpMessage(message, socket);
-        });
+                                                { HandleTcpMessage(message, socket); });
         m_TcpSocketMessenger->Update();
     }
 }
