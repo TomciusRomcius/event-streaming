@@ -21,18 +21,30 @@ Application::Application()
 
     int maxMemoryChunkCount = 10;
     m_MemoryPool = std::make_unique<MemoryPool>(maxMemoryChunkCount);
-    m_TcpConnectionPool = std::make_unique<TcpConnectionPool>(TcpConnectionPool(*m_InternalEventBus));
+    m_TcpConnectionPool = std::make_unique<TcpConnectionPool>((TcpConnectionPool(*m_InternalEventBus)));
 
     unsigned int serverPort = 9000;
     m_TcpConnectionManager = std::make_unique<TcpSocketConnectionManager>(
             TcpSocketConnectionManager(*m_InternalEventBus, *m_TcpConnectionPool, serverPort));
     m_TcpConnectionManager->InitializeServerSocket();
 
-    m_TcpSocketMessenger = std::make_unique<TcpSocketMessenger>(*m_TcpConnectionPool, *m_MemoryPool);
+    m_TcpSocketMessenger = std::make_unique<TcpSocketMessenger>(
+        TcpSocketMessenger(*m_TcpConnectionPool, *m_MemoryPool)
+    );
+
+    auto onReceiveMessage = [this](std::string&& message, SocketType socket)
+    {
+        HandleTcpMessage(std::move(message), socket);
+    };
     m_TcpMessageReceiver = std::make_unique<TcpMessageReceiver>(
-            TcpMessageReceiver(*m_TcpConnectionManager, *m_TcpConnectionPool, *m_MemoryPool));
+            TcpMessageReceiver(
+                *m_TcpConnectionManager,
+                *m_TcpConnectionPool,
+                *m_MemoryPool
+            )
+    );
     m_TcpRequestHandlerService = std::make_unique<TcpRequestHandlerService>();
-    m_EventSystem = std::make_unique<EventSystem>(*m_TcpSocketMessenger);
+    m_EventSystem = std::make_unique<EventSystem>(EventSystem(*m_TcpSocketMessenger));
 
     RegisterRequestStrategies();
 }
