@@ -3,19 +3,19 @@
 #include "tcpMessageReceiver.h"
 #include <cfloat>
 #include <functional>
-#include <iostream>
 #include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include "../../application/utils.h"
 
 TcpMessageReceiver::TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConnectionManager,
-                                       TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool) :
+                                       TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool,
+                                       std::function<void(std::string, SocketType)>&& messageHandler) :
     m_TcpSocketConnectionManager(tcpSocketConnectionManager), m_TcpConnectionPool(tcpConnectionPool),
-    m_MemoryPool(memoryPool)
+    m_MemoryPool(memoryPool), m_MessageHandler(std::move(messageHandler))
 {}
 
-void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler)
+void TcpMessageReceiver::TryReceiveMessage()
 {
     fd_set socketFdSet;
     FD_ZERO(&socketFdSet);
@@ -84,9 +84,9 @@ void TcpMessageReceiver::TryReceiveMessage(const std::function<void(std::string,
             std::string message((char*) buffer, receivedBytes <= bufSize ? receivedBytes : bufSize);
             LOG_DEBUG("Received message: '{}'", message);
             m_ProcessingSocketsToMsgSize.erase(clientSocket);
-            messageHandler(std::move(message),
-                           clientSocket); // Call the provided message handler with
+            // Call the provided message handler with
             // the received message
+            m_MessageHandler(std::move(message), clientSocket);
         } else
         {
             LOG_DEBUG("Reading request body size");

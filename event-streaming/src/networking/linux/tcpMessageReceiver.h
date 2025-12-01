@@ -28,13 +28,14 @@ class TcpMessageReceiver
 {
 public:
     TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConnectionManager, TcpConnectionPool& tcpConnectionPool,
-                       MemoryPool& memoryPool);
+                       MemoryPool& memoryPool, std::function<void(std::string, SocketType)>&& messageHandler);
 
     /// @param messageHandler A lambda that takes in a message body and socket
-    void TryReceiveMessage(const std::function<void(std::string, unsigned int)>& messageHandler);
+    void TryReceiveMessage();
 private:
     TcpSocketConnectionManager& m_TcpSocketConnectionManager;
     TcpConnectionPool& m_TcpConnectionPool;
+    std::function<void(std::string, unsigned int)> m_MessageHandler;
     MemoryPool& m_MemoryPool;
     std::unordered_map<unsigned int, uint32_t> m_ProcessingSocketsToMsgSize;
 };
