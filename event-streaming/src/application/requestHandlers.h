@@ -119,7 +119,7 @@ private:
         } else if (propType == PropertyType::NUMBER && propValue.is_number())
         {
             return new NumberProperty(propValue);
-        } else if (propType == PropertyType::BOOLEAN && propValue.is_number())
+        } else if (propType == PropertyType::BOOLEAN && propValue.is_boolean())
         {
             return new BooleanProperty(propValue);
         }
