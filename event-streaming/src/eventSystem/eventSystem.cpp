@@ -25,9 +25,9 @@ void EventSystem::Subscribe(std::string& eventType, GroupId groupId, SocketType 
 
     if (it == m_Groups.end())
     {
-        auto evGroup = EventGroup(groupId);
-        evGroup.Sockets.push_back(socket);
-        m_Groups[eventType] = {std::move(evGroup)};
+        std::vector<EventGroup>& vec = m_Groups[eventType];
+        vec.push_back(EventGroup(groupId));
+        vec.back().Sockets.push_back(socket);
     } else
     {
         auto& groups = it->second;
@@ -102,7 +102,6 @@ void EventSystem::Publish(Event& event)
     sockets.reserve(it->second.size());
     for (auto& group: it->second)
     {
-        srand(time(0));
         std::optional<SocketType> sock = group.GetNextSocket();
         if (sock.has_value())
         {
