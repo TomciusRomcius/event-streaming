@@ -45,7 +45,7 @@ typedef std::set<MemoryChunk, decltype(MemoryChunkComp)> MemoryChunkSet;
 class MemoryPool
 {
 public:
-    MemoryPool(int maxPoolCount) : m_MaxPoolCount(maxPoolCount), m_MemoryChunks(MemoryChunkComp) {}
+    explicit MemoryPool(int maxPoolCount) : m_MaxPoolCount(maxPoolCount), m_MemoryChunks(MemoryChunkComp) {}
 
     std::optional<MemoryChunkUser> GetMemoryChunk(int16_t chunkSize)
     {
