@@ -8,12 +8,14 @@
 class TcpSocketMessenger
 {
 public:
-    explicit TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool);
+    TcpSocketMessenger(TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool) :
+        m_TcpConnectionPool(tcpConnectionPool), m_MemoryPool(memoryPool)
+    {}
     void Update();
     bool QueueMessage(const std::vector<SocketType>& targetSockets, std::string message);
 private:
     TcpConnectionPool& m_TcpConnectionPool;
     MemoryPool& m_MemoryPool;
-    // Holds a tuple(socket, message)
+    // tuple(socket, message)
     std::queue<std::tuple<SocketType, std::string>> m_MessageQueue;
 };
