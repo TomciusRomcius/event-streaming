@@ -22,6 +22,12 @@ func socketListener(tcpService *TcpService) {
 }
 
 func main() {
+	fmt.Println("Commands:")
+	fmt.Println("connect [HOST]")
+	fmt.Println("create-event-type [EVENT-TYPE] --propName=[PROPERTY-NAME] --datatype=[DATATYPE] --propName=[PROPERTY-NAME] ...")
+	fmt.Println("subscribe [EVENT-TYPE] [GROUP-ID]")
+	fmt.Println("produce-event [EVENT-TYPE] --propName=[PROPERTY-NAME] --value=[VALUE] --propName=[PROPERTY-NAME] ...")
+
 	var tcpService = TcpService{}
 	tcpService.onConnect = func() {
 		go socketListener(&tcpService)
