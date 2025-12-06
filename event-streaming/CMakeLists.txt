@@ -9,7 +9,7 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 add_executable(event-streaming ${SOURCES} "src/eventSystem/eventGroup.h")
 target_precompile_headers(event-streaming PRIVATE src/pch.h)
 target_compile_definitions(event-streaming PRIVATE SPDLOG_ACTIVE_LEVEL=0)
-
+target_include_directories(event-streaming PRIVATE src)
 include(FetchContent)
 
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
