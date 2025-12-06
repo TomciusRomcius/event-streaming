@@ -59,6 +59,7 @@ func (service CreateEventTypeService) Execute(args []string) {
 		fmt.Println(err.Error())
 	}
 	service.tcpService.SendMessageBytes(msgJson)
+	fmt.Println("Created an event type succesfully")
 }
 
 func (service *CreateEventTypeService) GetArgCount() int {

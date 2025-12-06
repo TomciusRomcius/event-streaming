@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 )
 
@@ -47,6 +48,7 @@ func (service *ProduceEventService) Execute(args []string) {
 
 	var msgJson, _ = json.Marshal(msg)
 	service.tcpService.SendMessageBytes(msgJson)
+	fmt.Println("Produced the event succesfully")
 }
 
 func (service *ProduceEventService) GetArgCount() int {

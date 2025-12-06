@@ -24,6 +24,7 @@ func (service *SubscribeService) Execute(args []string) {
 	}`, eventType, groupId)
 
 	service.tcpService.SendMessage(msg)
+	fmt.Println("Subscribed succesfully")
 }
 
 func (service *SubscribeService) GetArgCount() int {
