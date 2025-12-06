@@ -4,7 +4,6 @@
 #include <vector>
 #include "../../core/memoryPool.h"
 #include "../shared/tcpConnectionPool.h"
-#include "../shared/tcpRequest.h"
 
 class TcpSocketMessenger
 {
@@ -13,7 +12,6 @@ public:
     void Update();
     bool QueueMessage(const std::vector<SocketType>& targetSockets, std::string message);
 private:
-    MemoryChunkUser&& FormTcpMessage(const std::string& message, uint32_t* bufferSize);
     TcpConnectionPool& m_TcpConnectionPool;
     MemoryPool& m_MemoryPool;
     // Holds a tuple(socket, message)
