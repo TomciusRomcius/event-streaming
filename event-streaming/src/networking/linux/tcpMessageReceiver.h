@@ -27,10 +27,12 @@ struct TcpSocketContext
 class TcpMessageReceiver
 {
 public:
-    TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConnectionManager, TcpConnectionPool& tcpConnectionPool,
-                       MemoryPool& memoryPool, std::function<void(std::string, SocketType)>&& messageHandler);
-
-    /// @param messageHandler A lambda that takes in a message body and socket
+    inline TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConnectionManager,
+                              TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool,
+                              std::function<void(std::string, SocketType)>&& messageHandler) :
+        m_TcpSocketConnectionManager(tcpSocketConnectionManager), m_TcpConnectionPool(tcpConnectionPool),
+        m_MemoryPool(memoryPool), m_MessageHandler(std::move(messageHandler))
+    {}
     void TryReceiveMessage();
 private:
     TcpSocketConnectionManager& m_TcpSocketConnectionManager;

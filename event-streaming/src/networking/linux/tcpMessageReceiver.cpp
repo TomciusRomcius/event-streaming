@@ -8,13 +8,6 @@
 #include <sys/socket.h>
 #include "../../application/utils.h"
 
-TcpMessageReceiver::TcpMessageReceiver(TcpSocketConnectionManager& tcpSocketConnectionManager,
-                                       TcpConnectionPool& tcpConnectionPool, MemoryPool& memoryPool,
-                                       std::function<void(std::string, SocketType)>&& messageHandler) :
-    m_TcpSocketConnectionManager(tcpSocketConnectionManager), m_TcpConnectionPool(tcpConnectionPool),
-    m_MemoryPool(memoryPool), m_MessageHandler(std::move(messageHandler))
-{}
-
 void TcpMessageReceiver::TryReceiveMessage()
 {
     fd_set socketFdSet;
