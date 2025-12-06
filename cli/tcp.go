@@ -48,6 +48,10 @@ func (cm *TcpService) SendMessage(message string) {
 }
 
 func (cm *TcpService) SendMessageBytes(message []byte) {
+	if cm.connection == nil {
+		// TODO: result pattern
+		return
+	}
 	var bufferSize = len(message)
 	var socketBuffer []byte = make([]byte, bufferSize+4)
 	var sizeBuffer []byte = make([]byte, 4)
