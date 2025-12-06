@@ -58,8 +58,6 @@ func (service CreateEventTypeService) Execute(args []string) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	var msgJsonS = string(msgJson)
-	fmt.Println(msgJsonS)
 	service.tcpService.SendMessageBytes(msgJson)
 }
 
